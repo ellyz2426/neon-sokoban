@@ -8,7 +8,8 @@ import { GameManager, Direction } from '../game-manager';
 import { BoardRenderer } from '../board-renderer';
 import { AudioManager } from '../audio-manager';
 
-export type GameScreen = 'menu' | 'playing' | 'levelselect' | 'complete' | 'pause';
+export type GameScreen = 'menu' | 'playing' | 'levelselect' | 'complete' | 'pause'
+  | 'achievements' | 'stats' | 'settings';
 
 export class GameSystem extends createSystem({}) {
   private game!: GameManager;
@@ -30,15 +31,12 @@ export class GameSystem extends createSystem({}) {
     this.boardRenderer = refs.boardRenderer;
     this.audio = refs.audio;
 
-    // Wire game callbacks
     this.game.onMove(() => {
       const state = this.game.state;
       if (!state) return;
 
-      // Check if a push happened
       if (state.pushes > this.prevPushCount) {
         this.audio.playPush();
-        // Check if box landed on target
         for (const [r, c] of this.game.getBoxPositions()) {
           if (this.game.isBoxOnTarget(r, c)) {
             setTimeout(() => this.audio.playBoxOnTarget(), 100);
@@ -55,7 +53,6 @@ export class GameSystem extends createSystem({}) {
     this.game.onComplete(() => {
       this.audio.playComplete();
       this.boardRenderer.playCelebration();
-      // Show complete screen after a short delay
       setTimeout(() => {
         this._screen = 'complete';
         this._onScreenChange?.('complete');
@@ -72,6 +69,11 @@ export class GameSystem extends createSystem({}) {
   setScreen(screen: GameScreen): void {
     this._screen = screen;
     this._onScreenChange?.(screen);
+
+    // Start ambient music when entering gameplay
+    if (screen === 'playing') {
+      this.audio.startAmbientMusic();
+    }
   }
 
   startGame(levelIdx: number): void {
@@ -80,6 +82,7 @@ export class GameSystem extends createSystem({}) {
     this.prevPushCount = 0;
     this._screen = 'playing';
     this._onScreenChange?.('playing');
+    this.audio.startAmbientMusic();
   }
 
   restartLevel(): void {
@@ -113,12 +116,10 @@ export class GameSystem extends createSystem({}) {
   }
 
   update(delta: number, _time: number): void {
-    // Update renderer
     this.boardRenderer.update(delta);
 
     if (this._screen !== 'playing') return;
 
-    // Input cooldown
     if (this.inputCooldown > 0) {
       this.inputCooldown -= delta;
     }
@@ -127,7 +128,6 @@ export class GameSystem extends createSystem({}) {
     }
 
     const inputMgr = this.world.input as any;
-    // Keyboard input
     let dir: Direction | null = null;
 
     if (inputMgr.keyboard.getKeyDown('ArrowUp') || inputMgr.keyboard.getKeyDown('KeyW')) {
@@ -140,41 +140,36 @@ export class GameSystem extends createSystem({}) {
       dir = 'right';
     }
 
-    // Keyboard undo
     if (inputMgr.keyboard.getKeyDown('KeyZ')) {
       this.undoMove();
     }
 
-    // Keyboard restart
     if (inputMgr.keyboard.getKeyDown('KeyR')) {
       this.restartLevel();
     }
 
-    // Keyboard pause/menu
     if (inputMgr.keyboard.getKeyDown('Escape')) {
       this._screen = 'pause';
       this._onScreenChange?.('pause');
     }
 
-    // XR controller input (right thumbstick)
+    // XR controller input
     const rightPad = inputMgr.xr.gamepads.right;
     if (rightPad && this.stickCooldown <= 0) {
       const stick = rightPad.getAxesValues(InputComponent.Thumbstick);
       if (stick) {
         const { x, y } = stick;
         if (Math.abs(x) > this.stickDeadzone || Math.abs(y) > this.stickDeadzone) {
-          // Determine dominant direction
           if (Math.abs(x) > Math.abs(y)) {
             dir = x > 0 ? 'right' : 'left';
           } else {
-            dir = y > 0 ? 'down' : 'up'; // Y is inverted for "forward = up on grid"
+            dir = y > 0 ? 'down' : 'up';
           }
           this.stickCooldown = 0.2;
         }
       }
     }
 
-    // Left thumbstick also works
     const leftPad = inputMgr.xr.gamepads.left;
     if (leftPad && this.stickCooldown <= 0) {
       const stick = leftPad.getAxesValues(InputComponent.Thumbstick);
@@ -191,31 +186,25 @@ export class GameSystem extends createSystem({}) {
       }
     }
 
-    // XR button input
     if (rightPad) {
-      // A button = undo
       if (rightPad.getButtonDown(InputComponent.A_Button)) {
         this.undoMove();
       }
-      // B button = pause
       if (rightPad.getButtonDown(InputComponent.B_Button)) {
         this._screen = 'pause';
         this._onScreenChange?.('pause');
       }
     }
     if (leftPad) {
-      // X button = restart
       if (leftPad.getButtonDown(InputComponent.A_Button)) {
         this.restartLevel();
       }
-      // Y button = menu
       if (leftPad.getButtonDown(InputComponent.B_Button)) {
         this._screen = 'menu';
         this._onScreenChange?.('menu');
       }
     }
 
-    // Execute move
     if (dir && this.inputCooldown <= 0) {
       const moved = this.game.tryMove(dir);
       if (moved) {

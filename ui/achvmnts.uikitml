@@ -1,0 +1,194 @@
+<panel>
+  <style>
+    .root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8;
+      padding: 16;
+      background-color: rgba(5, 5, 20, 0.94);
+      border-radius: 12;
+      border-color: #ffcc00;
+      border-width: 2;
+      width: 360;
+    }
+    .title {
+      font-size: 20;
+      color: #ffcc00;
+      font-weight: bold;
+    }
+    .counter {
+      font-size: 12;
+      color: #88aacc;
+    }
+    .cat-title {
+      font-size: 13;
+      color: #00ccff;
+      font-weight: bold;
+    }
+    .ach-row {
+      display: flex;
+      flex-direction: row;
+      gap: 6;
+      align-items: center;
+      width: 320;
+      padding: 4;
+    }
+    .ach-icon {
+      font-size: 12;
+      color: #ffcc00;
+      width: 30;
+    }
+    .ach-name {
+      font-size: 11;
+      color: #00eeff;
+      width: 100;
+    }
+    .ach-desc {
+      font-size: 9;
+      color: #668899;
+      width: 180;
+    }
+    .ach-locked-name {
+      font-size: 11;
+      color: #445566;
+      width: 100;
+    }
+    .ach-locked-desc {
+      font-size: 9;
+      color: #334455;
+      width: 180;
+    }
+    .ach-locked-icon {
+      font-size: 12;
+      color: #334455;
+      width: 30;
+    }
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 3;
+      width: 340;
+      padding: 4;
+    }
+    .divider {
+      height: 1;
+      width: 300;
+      background-color: #223344;
+    }
+    .nav-row {
+      display: flex;
+      flex-direction: row;
+      gap: 8;
+      justify-content: center;
+    }
+    .nav-btn {
+      background-color: #00223344;
+      border-color: #00ccff66;
+      border-width: 1;
+      border-radius: 6;
+      padding: 6;
+      width: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #00446666;
+    }
+    .nav-text {
+      font-size: 11;
+      color: #00bbdd;
+    }
+    .back-btn {
+      background-color: #33001166;
+      border-color: #ff008866;
+      border-width: 1;
+      border-radius: 8;
+      padding: 8;
+      width: 120;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #55002288;
+    }
+    .back-text {
+      font-size: 13;
+      color: #ff44aa;
+    }
+    .page-text {
+      font-size: 11;
+      color: #668899;
+    }
+  </style>
+  <container class="root">
+    <text class="title">ACHIEVEMENTS</text>
+    <text class="counter" id="ach-counter">0 / 40 Earned</text>
+    <container class="divider"></container>
+    <container class="section" id="ach-section">
+      <text class="cat-title" id="cat-title">PUZZLE</text>
+      <container class="ach-row" id="ach-0">
+        <text class="ach-icon" id="ach-0-icon">[*]</text>
+        <text class="ach-name" id="ach-0-name">---</text>
+        <text class="ach-desc" id="ach-0-desc">---</text>
+      </container>
+      <container class="ach-row" id="ach-1">
+        <text class="ach-icon" id="ach-1-icon">[*]</text>
+        <text class="ach-name" id="ach-1-name">---</text>
+        <text class="ach-desc" id="ach-1-desc">---</text>
+      </container>
+      <container class="ach-row" id="ach-2">
+        <text class="ach-icon" id="ach-2-icon">[*]</text>
+        <text class="ach-name" id="ach-2-name">---</text>
+        <text class="ach-desc" id="ach-2-desc">---</text>
+      </container>
+      <container class="ach-row" id="ach-3">
+        <text class="ach-icon" id="ach-3-icon">[*]</text>
+        <text class="ach-name" id="ach-3-name">---</text>
+        <text class="ach-desc" id="ach-3-desc">---</text>
+      </container>
+      <container class="ach-row" id="ach-4">
+        <text class="ach-icon" id="ach-4-icon">[*]</text>
+        <text class="ach-name" id="ach-4-name">---</text>
+        <text class="ach-desc" id="ach-4-desc">---</text>
+      </container>
+      <container class="ach-row" id="ach-5">
+        <text class="ach-icon" id="ach-5-icon">[*]</text>
+        <text class="ach-name" id="ach-5-name">---</text>
+        <text class="ach-desc" id="ach-5-desc">---</text>
+      </container>
+      <container class="ach-row" id="ach-6">
+        <text class="ach-icon" id="ach-6-icon">[*]</text>
+        <text class="ach-name" id="ach-6-name">---</text>
+        <text class="ach-desc" id="ach-6-desc">---</text>
+      </container>
+      <container class="ach-row" id="ach-7">
+        <text class="ach-icon" id="ach-7-icon">[*]</text>
+        <text class="ach-name" id="ach-7-name">---</text>
+        <text class="ach-desc" id="ach-7-desc">---</text>
+      </container>
+      <container class="ach-row" id="ach-8">
+        <text class="ach-icon" id="ach-8-icon">[*]</text>
+        <text class="ach-name" id="ach-8-name">---</text>
+        <text class="ach-desc" id="ach-8-desc">---</text>
+      </container>
+      <container class="ach-row" id="ach-9">
+        <text class="ach-icon" id="ach-9-icon">[*]</text>
+        <text class="ach-name" id="ach-9-name">---</text>
+        <text class="ach-desc" id="ach-9-desc">---</text>
+      </container>
+    </container>
+    <container class="nav-row">
+      <container class="nav-btn" id="ach-prev">
+        <text class="nav-text">PREV</text>
+      </container>
+      <text class="page-text" id="ach-page">1 / 5</text>
+      <container class="nav-btn" id="ach-next">
+        <text class="nav-text">NEXT</text>
+      </container>
+    </container>
+    <container class="back-btn" id="ach-back">
+      <text class="back-text">BACK</text>
+    </container>
+  </container>
+</panel>

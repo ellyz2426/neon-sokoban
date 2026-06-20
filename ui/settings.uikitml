@@ -1,0 +1,163 @@
+<panel>
+  <style>
+    .root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10;
+      padding: 16;
+      background-color: rgba(5, 5, 20, 0.94);
+      border-radius: 12;
+      border-color: #ff8800;
+      border-width: 2;
+      width: 300;
+    }
+    .title {
+      font-size: 20;
+      color: #ff8800;
+      font-weight: bold;
+    }
+    .section-title {
+      font-size: 13;
+      color: #00ccff;
+      font-weight: bold;
+    }
+    .setting-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 260;
+      padding: 4;
+    }
+    .setting-label {
+      font-size: 12;
+      color: #88aacc;
+    }
+    .setting-value {
+      font-size: 12;
+      color: #00eeff;
+      font-weight: bold;
+    }
+    .arrow-btn {
+      background-color: #00223344;
+      border-color: #00ccff44;
+      border-width: 1;
+      border-radius: 4;
+      padding: 4;
+      width: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #00446666;
+    }
+    .arrow-text {
+      font-size: 12;
+      color: #00bbdd;
+    }
+    .value-row {
+      display: flex;
+      flex-direction: row;
+      gap: 6;
+      align-items: center;
+    }
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 6;
+      width: 280;
+    }
+    .divider {
+      height: 1;
+      width: 240;
+      background-color: #223344;
+    }
+    .back-btn {
+      background-color: #33001166;
+      border-color: #ff008866;
+      border-width: 1;
+      border-radius: 8;
+      padding: 8;
+      width: 120;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #55002288;
+    }
+    .back-text {
+      font-size: 13;
+      color: #ff44aa;
+    }
+    .theme-preview {
+      width: 20;
+      height: 20;
+      border-radius: 4;
+      border-width: 1;
+      border-color: #ffffff44;
+    }
+  </style>
+  <container class="root">
+    <text class="title">SETTINGS</text>
+    <container class="divider"></container>
+    <container class="section">
+      <text class="section-title">THEME</text>
+      <container class="setting-row">
+        <text class="setting-label">Color Theme</text>
+        <container class="value-row">
+          <container class="arrow-btn" id="theme-prev">
+            <text class="arrow-text">&lt;</text>
+          </container>
+          <text class="setting-value" id="theme-name">Neon Blue</text>
+          <container class="arrow-btn" id="theme-next">
+            <text class="arrow-text">&gt;</text>
+          </container>
+        </container>
+      </container>
+    </container>
+    <container class="divider"></container>
+    <container class="section">
+      <text class="section-title">AUDIO</text>
+      <container class="setting-row">
+        <text class="setting-label">Sound Effects</text>
+        <container class="value-row">
+          <container class="arrow-btn" id="sfx-toggle">
+            <text class="arrow-text" id="sfx-value">ON</text>
+          </container>
+        </container>
+      </container>
+      <container class="setting-row">
+        <text class="setting-label">Music</text>
+        <container class="value-row">
+          <container class="arrow-btn" id="music-toggle">
+            <text class="arrow-text" id="music-value">ON</text>
+          </container>
+        </container>
+      </container>
+    </container>
+    <container class="divider"></container>
+    <container class="section">
+      <text class="section-title">CONTROLS</text>
+      <container class="setting-row">
+        <text class="setting-label">Move</text>
+        <text class="setting-value">WASD / Arrows</text>
+      </container>
+      <container class="setting-row">
+        <text class="setting-label">Undo</text>
+        <text class="setting-value">Z / A Button</text>
+      </container>
+      <container class="setting-row">
+        <text class="setting-label">Restart</text>
+        <text class="setting-value">R / X Button</text>
+      </container>
+      <container class="setting-row">
+        <text class="setting-label">Menu</text>
+        <text class="setting-value">Esc / B Button</text>
+      </container>
+    </container>
+    <container class="back-btn" id="settings-back">
+      <text class="back-text">BACK</text>
+    </container>
+  </container>
+</panel>

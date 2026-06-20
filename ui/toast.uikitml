@@ -1,0 +1,47 @@
+<panel>
+  <style>
+    .root {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10;
+      padding: 12;
+      background-color: rgba(20, 15, 5, 0.95);
+      border-radius: 10;
+      border-color: #ffcc00;
+      border-width: 2;
+      width: 260;
+    }
+    .icon {
+      font-size: 18;
+      color: #ffcc00;
+      font-weight: bold;
+    }
+    .info {
+      display: flex;
+      flex-direction: column;
+      gap: 2;
+    }
+    .label {
+      font-size: 9;
+      color: #ffaa00;
+    }
+    .name {
+      font-size: 13;
+      color: #ffcc00;
+      font-weight: bold;
+    }
+    .desc {
+      font-size: 9;
+      color: #ccaa66;
+    }
+  </style>
+  <container class="root">
+    <text class="icon" id="toast-icon">[*]</text>
+    <container class="info">
+      <text class="label">ACHIEVEMENT UNLOCKED</text>
+      <text class="name" id="toast-name">First Solve</text>
+      <text class="desc" id="toast-desc">Complete your first level</text>
+    </container>
+  </container>
+</panel>

@@ -1,6 +1,7 @@
-// Core Sokoban game logic
+// Core Sokoban game logic - Enhanced with full stats tracking
 
 import { LEVELS, LevelDef } from './levels';
+import { AchievementTracker, AchievementStats, Achievement } from './achievements';
 
 export const enum CellType {
   Empty = 0,
@@ -12,8 +13,8 @@ export const enum CellType {
 export interface GameState {
   width: number;
   height: number;
-  grid: CellType[][];     // static grid (walls, floor, targets)
-  boxes: Set<string>;     // "row,col" keys for box positions
+  grid: CellType[][];
+  boxes: Set<string>;
   playerRow: number;
   playerCol: number;
   moves: number;
@@ -47,46 +48,105 @@ export class GameManager {
   private undoStack: MoveRecord[] = [];
   private _onMove: (() => void) | null = null;
   private _onComplete: (() => void) | null = null;
-  bestMoves: number[] = []; // best moves per level
+  private _onAchievement: ((ach: Achievement) => void) | null = null;
+  bestMoves: number[] = [];
   completedLevels: Set<number> = new Set();
   gameMode: 'classic' | 'timed' | 'challenge' = 'classic';
   timerStart = 0;
   timerElapsed = 0;
 
-  // Achievement tracking
+  // Stats tracking
   totalMoves = 0;
   totalPushes = 0;
   totalLevelsCompleted = 0;
   totalUndos = 0;
-  perfectLevels = 0; // completed at or under par
+  perfectLevels = 0;
+  totalRestarts = 0;
+  totalTimePlayed = 0; // seconds
+  sessionLevels = 0; // levels completed this session
+  currentLevelUndos = 0;
+  currentLevelRestarted = false;
+  noUndoLevels = 0;
+  levelsFirstTry = 0;
+  levelsUnder10Moves = 0;
+  noUndoStreak = 0;
+  longestNoUndoStreak = 0;
+  threeStarCount = 0;
+  sessionStartTime = 0;
+
+  // Achievement system
+  achievements: AchievementTracker;
 
   constructor() {
-    // Load saved progress from localStorage
+    this.achievements = new AchievementTracker();
+    this.sessionStartTime = performance.now();
+    this.load();
+  }
+
+  private load(): void {
     try {
-      const saved = localStorage.getItem('neon-sokoban-progress');
+      const saved = localStorage.getItem('neon-sokoban-progress-v2');
       if (saved) {
-        const data = JSON.parse(saved);
-        this.completedLevels = new Set(data.completedLevels || []);
-        this.bestMoves = data.bestMoves || [];
-        this.totalLevelsCompleted = data.totalLevelsCompleted || 0;
-        this.perfectLevels = data.perfectLevels || 0;
+        const d = JSON.parse(saved);
+        this.completedLevels = new Set(d.completedLevels || []);
+        this.bestMoves = d.bestMoves || [];
+        this.totalLevelsCompleted = d.totalLevelsCompleted || 0;
+        this.perfectLevels = d.perfectLevels || 0;
+        this.totalMoves = d.totalMoves || 0;
+        this.totalPushes = d.totalPushes || 0;
+        this.totalUndos = d.totalUndos || 0;
+        this.totalRestarts = d.totalRestarts || 0;
+        this.totalTimePlayed = d.totalTimePlayed || 0;
+        this.noUndoLevels = d.noUndoLevels || 0;
+        this.levelsFirstTry = d.levelsFirstTry || 0;
+        this.levelsUnder10Moves = d.levelsUnder10Moves || 0;
+        this.longestNoUndoStreak = d.longestNoUndoStreak || 0;
+        this.threeStarCount = d.threeStarCount || 0;
+      } else {
+        // Migrate from v1
+        const v1 = localStorage.getItem('neon-sokoban-progress');
+        if (v1) {
+          const d = JSON.parse(v1);
+          this.completedLevels = new Set(d.completedLevels || []);
+          this.bestMoves = d.bestMoves || [];
+          this.totalLevelsCompleted = d.totalLevelsCompleted || 0;
+          this.perfectLevels = d.perfectLevels || 0;
+        }
       }
     } catch { /* ignore */ }
   }
 
   saveProgress(): void {
     try {
-      localStorage.setItem('neon-sokoban-progress', JSON.stringify({
+      // Update total time
+      this.totalTimePlayed += (performance.now() - this.sessionStartTime) / 1000;
+      this.sessionStartTime = performance.now();
+
+      localStorage.setItem('neon-sokoban-progress-v2', JSON.stringify({
         completedLevels: [...this.completedLevels],
         bestMoves: this.bestMoves,
         totalLevelsCompleted: this.totalLevelsCompleted,
         perfectLevels: this.perfectLevels,
+        totalMoves: this.totalMoves,
+        totalPushes: this.totalPushes,
+        totalUndos: this.totalUndos,
+        totalRestarts: this.totalRestarts,
+        totalTimePlayed: this.totalTimePlayed,
+        noUndoLevels: this.noUndoLevels,
+        levelsFirstTry: this.levelsFirstTry,
+        levelsUnder10Moves: this.levelsUnder10Moves,
+        longestNoUndoStreak: this.longestNoUndoStreak,
+        threeStarCount: this.threeStarCount,
       }));
     } catch { /* ignore */ }
   }
 
   onMove(cb: () => void): void { this._onMove = cb; }
   onComplete(cb: () => void): void { this._onComplete = cb; }
+  onAchievement(cb: (ach: Achievement) => void): void {
+    this._onAchievement = cb;
+    this.achievements.onEarned((ach) => this._onAchievement?.(ach));
+  }
 
   getLevelDef(idx: number): LevelDef | undefined {
     return LEVELS[idx];
@@ -99,6 +159,8 @@ export class GameManager {
     this.currentLevel = idx;
     const def = LEVELS[idx];
     this.undoStack = [];
+    this.currentLevelUndos = 0;
+    this.currentLevelRestarted = false;
 
     const height = def.rows.length;
     const width = Math.max(...def.rows.map(r => r.length));
@@ -127,25 +189,23 @@ export class GameManager {
             playerRow = r;
             playerCol = c;
             break;
-          case '+': // player on target
+          case '+':
             grid[r][c] = CellType.Target;
             playerRow = r;
             playerCol = c;
             break;
-          case '*': // box on target
+          case '*':
             grid[r][c] = CellType.Target;
             boxes.add(posKey(r, c));
             break;
           case ' ':
           default:
-            // Determine if this is inside the level (floor) or outside (empty)
             grid[r][c] = CellType.Empty;
             break;
         }
       }
     }
 
-    // Flood fill from player to mark reachable empty cells as floor
     this.floodFillFloor(grid, playerRow, playerCol, height, width);
 
     this.state = {
@@ -186,21 +246,18 @@ export class GameManager {
     const { playerRow: pr, playerCol: pc, grid, boxes, width, height } = this.state;
     const nr = pr + dr, nc = pc + dc;
 
-    // Out of bounds or wall
     if (nr < 0 || nr >= height || nc < 0 || nc >= width) return false;
     if (grid[nr][nc] === CellType.Wall || grid[nr][nc] === CellType.Empty) return false;
 
     const nKey = posKey(nr, nc);
 
     if (boxes.has(nKey)) {
-      // Try to push the box
       const br = nr + dr, bc = nc + dc;
       if (br < 0 || br >= height || bc < 0 || bc >= width) return false;
       if (grid[br][bc] === CellType.Wall || grid[br][bc] === CellType.Empty) return false;
       const bKey = posKey(br, bc);
-      if (boxes.has(bKey)) return false; // Can't push into another box
+      if (boxes.has(bKey)) return false;
 
-      // Push the box
       boxes.delete(nKey);
       boxes.add(bKey);
       this.state.pushes++;
@@ -221,12 +278,12 @@ export class GameManager {
 
     this._onMove?.();
 
-    // Check completion
     if (this.checkComplete()) {
       this.state.completed = true;
       this.timerElapsed = performance.now() - this.timerStart;
       this.completedLevels.add(this.currentLevel);
       this.totalLevelsCompleted++;
+      this.sessionLevels++;
 
       const prevBest = this.bestMoves[this.currentLevel] || Infinity;
       if (this.state.moves < prevBest) {
@@ -238,7 +295,35 @@ export class GameManager {
         this.perfectLevels++;
       }
 
+      const stars = this.getStarRating();
+      if (stars === 3) this.threeStarCount++;
+
+      // Track no-undo completion
+      if (this.currentLevelUndos === 0) {
+        this.noUndoLevels++;
+        this.noUndoStreak++;
+        if (this.noUndoStreak > this.longestNoUndoStreak) {
+          this.longestNoUndoStreak = this.noUndoStreak;
+        }
+      } else {
+        this.noUndoStreak = 0;
+      }
+
+      // Track first-try (no restart)
+      if (!this.currentLevelRestarted) {
+        this.levelsFirstTry++;
+      }
+
+      // Track under-10 moves
+      if (this.state.moves < 10) {
+        this.levelsUnder10Moves++;
+      }
+
       this.saveProgress();
+
+      // Check achievements
+      this.checkAchievements();
+
       this._onComplete?.();
     }
 
@@ -253,6 +338,7 @@ export class GameManager {
     this.state.playerCol = record.playerCol;
     this.state.moves--;
     this.totalUndos++;
+    this.currentLevelUndos++;
 
     if (record.boxFrom && record.boxTo) {
       this.state.boxes.delete(record.boxTo);
@@ -267,7 +353,6 @@ export class GameManager {
   private checkComplete(): boolean {
     if (!this.state) return false;
     const { grid, boxes } = this.state;
-    // All targets must have a box
     for (let r = 0; r < this.state.height; r++) {
       for (let c = 0; c < this.state.width; c++) {
         if (grid[r][c] === CellType.Target && !boxes.has(posKey(r, c))) {
@@ -293,6 +378,8 @@ export class GameManager {
   }
 
   restartLevel(): void {
+    this.totalRestarts++;
+    this.currentLevelRestarted = true;
     this.loadLevel(this.currentLevel);
   }
 
@@ -304,7 +391,6 @@ export class GameManager {
     return false;
   }
 
-  // Get all box positions as [row, col] pairs
   getBoxPositions(): [number, number][] {
     if (!this.state) return [];
     return [...this.state.boxes].map(k => {
@@ -313,7 +399,6 @@ export class GameManager {
     });
   }
 
-  // Get all target positions
   getTargetPositions(): [number, number][] {
     if (!this.state) return [];
     const targets: [number, number][] = [];
@@ -325,5 +410,56 @@ export class GameManager {
       }
     }
     return targets;
+  }
+
+  private checkAchievements(): void {
+    const tiers = this.getTierCompletion();
+    const stats: AchievementStats = {
+      totalLevelsCompleted: this.totalLevelsCompleted,
+      uniqueLevelsCompleted: this.completedLevels.size,
+      totalMoves: this.totalMoves,
+      totalPushes: this.totalPushes,
+      totalUndos: this.totalUndos,
+      perfectLevels: this.perfectLevels,
+      threeStarLevels: this.threeStarCount,
+      twoStarLevels: 0, // not tracked separately
+      tutorialComplete: tiers.tutorial,
+      easyComplete: tiers.easy,
+      mediumComplete: tiers.medium,
+      hardComplete: tiers.hard,
+      expertComplete: tiers.expert,
+      allComplete: this.completedLevels.size >= 30,
+      longestStreak: this.longestNoUndoStreak,
+      noUndoLevels: this.noUndoLevels,
+      totalRestarts: this.totalRestarts,
+      totalTimePlayed: this.totalTimePlayed + (performance.now() - this.sessionStartTime) / 1000,
+      levelsUnder10Moves: this.levelsUnder10Moves,
+      levelsFirstTry: this.levelsFirstTry,
+      currentSession: this.sessionLevels,
+    };
+    this.achievements.check(stats);
+  }
+
+  getTierCompletion(): { tutorial: boolean; easy: boolean; medium: boolean; hard: boolean; expert: boolean } {
+    const check = (start: number, end: number) => {
+      for (let i = start; i <= end; i++) {
+        if (!this.completedLevels.has(i)) return false;
+      }
+      return true;
+    };
+    return {
+      tutorial: check(0, 5),
+      easy: check(6, 11),
+      medium: check(12, 17),
+      hard: check(18, 23),
+      expert: check(24, 29),
+    };
+  }
+
+  getFormattedTime(ms: number): string {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
   }
 }

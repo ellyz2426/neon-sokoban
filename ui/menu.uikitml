@@ -5,7 +5,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 12;
+      gap: 10;
       padding: 20;
       background-color: rgba(5, 5, 20, 0.92);
       border-radius: 12;
@@ -40,12 +40,35 @@
       color: #00eeff;
       font-weight: bold;
     }
+    .btn-small {
+      background-color: #11223344;
+      border-color: #00ccff66;
+      border-width: 1;
+      border-radius: 6;
+      padding: 7;
+      width: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #22446666;
+    }
+    .btn-small-text {
+      font-size: 11;
+      color: #88bbdd;
+    }
     .progress {
       font-size: 12;
       color: #668899;
     }
     .spacer {
-      height: 8;
+      height: 6;
+    }
+    .bottom-row {
+      display: flex;
+      flex-direction: row;
+      gap: 8;
+      justify-content: center;
     }
   </style>
   <container class="root">
@@ -62,6 +85,17 @@
       <text class="btn-text">LEVEL SELECT</text>
     </container>
     <container class="spacer"></container>
+    <container class="bottom-row">
+      <container class="btn-small" id="btn-achievements">
+        <text class="btn-small-text">TROPHIES</text>
+      </container>
+      <container class="btn-small" id="btn-stats">
+        <text class="btn-small-text">STATS</text>
+      </container>
+      <container class="btn-small" id="btn-settings">
+        <text class="btn-small-text">SETTINGS</text>
+      </container>
+    </container>
     <text class="progress" id="progress-text">0/30 Levels</text>
   </container>
 </panel>
