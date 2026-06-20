@@ -9,7 +9,7 @@
       border-radius: 8;
       border-color: #00ccff44;
       border-width: 1;
-      width: 260;
+      width: 290;
     }
     .level-row {
       display: flex;
@@ -25,17 +25,21 @@
     .stat-row {
       display: flex;
       flex-direction: row;
-      gap: 16;
+      gap: 12;
       justify-content: center;
     }
     .stat-text {
       font-size: 11;
       color: #88aacc;
     }
+    .timer-text {
+      font-size: 11;
+      color: #ffcc00;
+    }
     .btn-row {
       display: flex;
       flex-direction: row;
-      gap: 8;
+      gap: 6;
       justify-content: center;
     }
     .hud-btn {
@@ -51,6 +55,19 @@
       font-size: 10;
       color: #00bbdd;
     }
+    .hint-btn {
+      background-color: #332200;
+      border-color: #ffcc0066;
+      border-width: 1;
+      border-radius: 6;
+      padding: 6;
+      cursor: pointer;
+      hover-background-color: #554400;
+    }
+    .hint-btn-text {
+      font-size: 10;
+      color: #ffcc00;
+    }
   </style>
   <container class="root">
     <container class="level-row">
@@ -60,16 +77,20 @@
       <text class="stat-text" id="moves-text">Moves: 0</text>
       <text class="stat-text" id="pushes-text">Pushes: 0</text>
       <text class="stat-text" id="par-text">Par: 4</text>
+      <text class="timer-text" id="timer-text">0:00</text>
     </container>
     <container class="btn-row">
       <container class="hud-btn" id="btn-undo">
-        <text class="hud-btn-text">UNDO [Z]</text>
+        <text class="hud-btn-text">UNDO</text>
+      </container>
+      <container class="hint-btn" id="btn-hint">
+        <text class="hint-btn-text">HINT</text>
       </container>
       <container class="hud-btn" id="btn-restart">
-        <text class="hud-btn-text">RESET [R]</text>
+        <text class="hud-btn-text">RESET</text>
       </container>
       <container class="hud-btn" id="btn-pause">
-        <text class="hud-btn-text">MENU [Esc]</text>
+        <text class="hud-btn-text">MENU</text>
       </container>
     </container>
   </container>

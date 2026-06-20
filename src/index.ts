@@ -115,6 +115,12 @@ function createPanels(world: World): void {
   toastEntity.object3D!.position.set(0, 2.0, -1.5);
   toastEntity.addComponent(PanelUI, { config: './ui/toast.json' });
   toastEntity.object3D!.visible = false;
+
+  // Help/Controls
+  const helpEntity = world.createTransformEntity();
+  helpEntity.object3D!.position.set(0, 1.0, -1.5);
+  helpEntity.addComponent(PanelUI, { config: './ui/help.json' });
+  helpEntity.object3D!.visible = false;
 }
 
 main().catch(console.error);

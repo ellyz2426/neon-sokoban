@@ -128,6 +128,14 @@
         <text class="stat-label">Sub-10 Move Clears</text>
         <text class="stat-value" id="stat-quick">0</text>
       </container>
+      <container class="stat-row">
+        <text class="stat-label">Hints Used</text>
+        <text class="stat-value" id="stat-hints">0</text>
+      </container>
+      <container class="stat-row">
+        <text class="stat-label">Deadlocks Triggered</text>
+        <text class="stat-value" id="stat-deadlocks">0</text>
+      </container>
     </container>
     <container class="back-btn" id="stats-back">
       <text class="back-text">BACK</text>

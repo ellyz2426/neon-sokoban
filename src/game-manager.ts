@@ -76,6 +76,10 @@ export class GameManager {
   threeStarCount = 0;
   sessionStartTime = 0;
   deadlocksTriggered = 0;
+  totalHintsUsed = 0;
+
+  // Best times (seconds) per level
+  bestTimes: number[] = [];
 
   // Daily challenge
   dailyChallengeCompleted = false;
@@ -110,6 +114,8 @@ export class GameManager {
         this.levelsUnder10Moves = d.levelsUnder10Moves || 0;
         this.longestNoUndoStreak = d.longestNoUndoStreak || 0;
         this.threeStarCount = d.threeStarCount || 0;
+        this.totalHintsUsed = d.totalHintsUsed || 0;
+        this.bestTimes = d.bestTimes || [];
       } else {
         // Migrate from v1
         const v1 = localStorage.getItem('neon-sokoban-progress');
@@ -145,6 +151,8 @@ export class GameManager {
         levelsUnder10Moves: this.levelsUnder10Moves,
         longestNoUndoStreak: this.longestNoUndoStreak,
         threeStarCount: this.threeStarCount,
+        totalHintsUsed: this.totalHintsUsed,
+        bestTimes: this.bestTimes,
       }));
     } catch { /* ignore */ }
   }
@@ -456,6 +464,9 @@ export class GameManager {
       currentSession: this.sessionLevels,
       dailyChallengesCompleted: this.dailyChallengeCompleted ? 1 : 0,
       deadlocksTriggered: this.deadlocksTriggered,
+      hintsUsed: this.totalHintsUsed,
+      fastestLevelTime: this.timerElapsed / 1000,
+      noHintLevels: this.levelsFirstTry, // reuse first-try as proxy for now
     };
     this.achievements.check(stats);
   }

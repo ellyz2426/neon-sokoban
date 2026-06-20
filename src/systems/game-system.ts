@@ -7,9 +7,10 @@ import {
 import { GameManager, Direction } from '../game-manager';
 import { BoardRenderer } from '../board-renderer';
 import { AudioManager } from '../audio-manager';
+import { generateHint, canPlayerReach } from '../hints';
 
 export type GameScreen = 'menu' | 'playing' | 'levelselect' | 'complete' | 'pause'
-  | 'achievements' | 'stats' | 'settings';
+  | 'achievements' | 'stats' | 'settings' | 'help';
 
 export class GameSystem extends createSystem({}) {
   private game!: GameManager;
@@ -22,6 +23,9 @@ export class GameSystem extends createSystem({}) {
   private _onScreenChange: ((screen: GameScreen) => void) | null = null;
   private prevPushCount = 0;
   isDailyChallenge = false;
+  elapsedTime = 0; // seconds since level start
+  private hintCooldown = 0;
+  hintsUsed = 0;
 
   setRefs(refs: {
     game: GameManager;
@@ -94,6 +98,8 @@ export class GameSystem extends createSystem({}) {
     this.boardRenderer.buildBoard();
     this.prevPushCount = 0;
     this.isDailyChallenge = false;
+    this.elapsedTime = 0;
+    this.hintsUsed = 0;
     this._screen = 'playing';
     this._onScreenChange?.('playing');
     this.audio.startAmbientMusic();
@@ -105,6 +111,8 @@ export class GameSystem extends createSystem({}) {
     this.boardRenderer.buildBoard();
     this.prevPushCount = 0;
     this.isDailyChallenge = true;
+    this.elapsedTime = 0;
+    this.hintsUsed = 0;
     this._screen = 'playing';
     this._onScreenChange?.('playing');
     this.audio.startAmbientMusic();
@@ -114,6 +122,7 @@ export class GameSystem extends createSystem({}) {
     this.game.restartLevel();
     this.boardRenderer.buildBoard();
     this.prevPushCount = 0;
+    this.elapsedTime = 0;
     this._screen = 'playing';
     this._onScreenChange?.('playing');
   }
@@ -134,10 +143,45 @@ export class GameSystem extends createSystem({}) {
     if (this.game.undo()) {
       this.audio.playUndo();
       this.boardRenderer.updatePositions();
+      this.boardRenderer.clearHint();
       if (this.game.state) {
         this.prevPushCount = this.game.state.pushes;
       }
     }
+  }
+
+  showHint(): void {
+    if (this.hintCooldown > 0) return;
+    if (!this.game.state || this.game.state.completed) return;
+
+    const hint = generateHint(this.game.state);
+    if (hint) {
+      // Validate player can reach the push position
+      const pushR = hint.boxRow - (hint.direction === 'down' ? 1 : hint.direction === 'up' ? -1 : 0);
+      const pushC = hint.boxCol - (hint.direction === 'right' ? 1 : hint.direction === 'left' ? -1 : 0);
+
+      if (canPlayerReach(this.game.state, pushR, pushC)) {
+        this.boardRenderer.setHintBox(`${hint.boxRow},${hint.boxCol}`);
+        this.audio.playHint();
+        this.hintsUsed++;
+        this.game.totalHintsUsed++;
+      } else {
+        // Still show the box even if player can't reach directly
+        this.boardRenderer.setHintBox(`${hint.boxRow},${hint.boxCol}`);
+        this.audio.playHint();
+        this.hintsUsed++;
+        this.game.totalHintsUsed++;
+      }
+    } else {
+      this.audio.playInvalid();
+    }
+    this.hintCooldown = 1.0; // 1 second cooldown
+  }
+
+  formatTime(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
   update(delta: number, _time: number): void {
@@ -145,11 +189,17 @@ export class GameSystem extends createSystem({}) {
 
     if (this._screen !== 'playing') return;
 
+    // Update elapsed time
+    this.elapsedTime += delta;
+
     if (this.inputCooldown > 0) {
       this.inputCooldown -= delta;
     }
     if (this.stickCooldown > 0) {
       this.stickCooldown -= delta;
+    }
+    if (this.hintCooldown > 0) {
+      this.hintCooldown -= delta;
     }
 
     const inputMgr = this.world.input as any;
@@ -171,6 +221,10 @@ export class GameSystem extends createSystem({}) {
 
     if (inputMgr.keyboard.getKeyDown('KeyR')) {
       this.restartLevel();
+    }
+
+    if (inputMgr.keyboard.getKeyDown('KeyH')) {
+      this.showHint();
     }
 
     if (inputMgr.keyboard.getKeyDown('Escape')) {

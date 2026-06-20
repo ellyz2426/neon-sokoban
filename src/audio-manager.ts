@@ -343,4 +343,34 @@ export class AudioManager {
       osc.stop(t + i * 0.06 + 0.2);
     });
   }
+
+  playHint(): void {
+    this.init();
+    if (!this.ctx || !this.sfxGain || !this.sfxEnabled) return;
+    this.ensureResumed();
+    const t = this.ctx.currentTime;
+    // Gentle questioning tone - rising two notes
+    const osc1 = this.ctx.createOscillator();
+    const gain1 = this.ctx.createGain();
+    osc1.type = 'triangle';
+    osc1.frequency.setValueAtTime(523.25, t);
+    osc1.frequency.exponentialRampToValueAtTime(659.25, t + 0.15);
+    gain1.gain.setValueAtTime(0.08, t);
+    gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+    osc1.connect(gain1).connect(this.sfxGain);
+    osc1.start(t);
+    osc1.stop(t + 0.25);
+
+    // Shimmer
+    const osc2 = this.ctx.createOscillator();
+    const gain2 = this.ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = 1318.5;
+    gain2.gain.setValueAtTime(0, t + 0.05);
+    gain2.gain.linearRampToValueAtTime(0.04, t + 0.1);
+    gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc2.connect(gain2).connect(this.sfxGain);
+    osc2.start(t + 0.05);
+    osc2.stop(t + 0.3);
+  }
 }

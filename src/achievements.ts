@@ -37,6 +37,9 @@ export interface AchievementStats {
   currentSession: number; // levels completed this session
   dailyChallengesCompleted: number;
   deadlocksTriggered: number;
+  hintsUsed: number;
+  fastestLevelTime: number; // seconds
+  noHintLevels: number;
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -98,6 +101,15 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'true_master', name: 'True Master', description: 'All 50 levels done, 30+ at par, 1000+ moves', category: 'mastery', icon: '|G|', condition: (s) => s.allComplete && s.perfectLevels >= 30 && s.totalMoves >= 1000 },
   { id: 'daily_first', name: 'Daily Player', description: 'Complete your first daily challenge', category: 'mastery', icon: '|D|', condition: (s) => s.dailyChallengesCompleted >= 1 },
   { id: 'deadlock_awareness', name: 'Deadlock Detective', description: 'Trigger 10 deadlock warnings', category: 'explorer', icon: '{!}', condition: (s) => s.deadlocksTriggered >= 10 },
+
+  // New achievements
+  { id: 'hint_curious', name: 'Curious Mind', description: 'Use a hint for the first time', category: 'explorer', icon: '{?}', condition: (s) => s.hintsUsed >= 1 },
+  { id: 'hint_seeker', name: 'Guidance Seeker', description: 'Use hints 10 times', category: 'explorer', icon: '{?}', condition: (s) => s.hintsUsed >= 10 },
+  { id: 'hint_master', name: 'Hint Master', description: 'Use hints 50 times', category: 'explorer', icon: '{?}', condition: (s) => s.hintsUsed >= 50 },
+  { id: 'speed_demon_30', name: 'Speed Demon', description: 'Complete a level in under 30 seconds', category: 'mastery', icon: '|>|', condition: (s) => s.fastestLevelTime < 30 },
+  { id: 'speed_demon_15', name: 'Lightning', description: 'Complete a level in under 15 seconds', category: 'mastery', icon: '|>|', condition: (s) => s.fastestLevelTime < 15 },
+  { id: 'no_hint_clear_5', name: 'Self-Reliant', description: 'Complete 5 levels without using hints', category: 'efficiency', icon: '(!)', condition: (s) => s.noHintLevels >= 5 },
+  { id: 'deadlock_30', name: 'Deadlock Veteran', description: 'Trigger 30 deadlock warnings', category: 'explorer', icon: '{!}', condition: (s) => s.deadlocksTriggered >= 30 },
 ];
 
 export class AchievementTracker {

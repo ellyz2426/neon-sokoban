@@ -66,7 +66,11 @@
       <text class="stat-text" id="moves-text">Moves: 4</text>
       <text class="stat-text" id="pushes-text">Pushes: 1</text>
     </container>
-    <text class="stat-text" id="par-text">Par: 4</text>
+    <container class="stat-row">
+      <text class="stat-text" id="par-text">Par: 4</text>
+      <text class="stat-text" id="time-text">Time: 0:00</text>
+    </container>
+    <text class="stat-text" id="best-text">Best: --</text>
     <container class="spacer"></container>
     <container class="btn" id="btn-next">
       <text class="btn-text">NEXT LEVEL</text>

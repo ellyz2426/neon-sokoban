@@ -65,6 +65,10 @@ export class UISystem extends createSystem({
     required: [PanelUI, PanelDocument],
     where: [eq(PanelUI, 'config', './ui/toast.json')],
   },
+  helpPanel: {
+    required: [PanelUI, PanelDocument],
+    where: [eq(PanelUI, 'config', './ui/help.json')],
+  },
 }) {
   private game!: GameManager;
   private gameSystem!: GameSystem;
@@ -82,6 +86,7 @@ export class UISystem extends createSystem({
   private statsDoc: UIKitDocument | null = null;
   private settingsDoc: UIKitDocument | null = null;
   private toastDoc: UIKitDocument | null = null;
+  private helpDoc: UIKitDocument | null = null;
 
   // Entities
   private menuEntity: import('@iwsdk/core').Entity | null = null;
@@ -93,6 +98,7 @@ export class UISystem extends createSystem({
   private statsEntity: import('@iwsdk/core').Entity | null = null;
   private settingsEntity: import('@iwsdk/core').Entity | null = null;
   private toastEntity: import('@iwsdk/core').Entity | null = null;
+  private helpEntity: import('@iwsdk/core').Entity | null = null;
 
   // Level select pagination
   private levelPage = 0;
@@ -138,6 +144,7 @@ export class UISystem extends createSystem({
     this.bindStatsPanel();
     this.bindSettingsPanel();
     this.bindToastPanel();
+    this.bindHelpPanel();
   }
 
   private bindMenuPanel(): void {
@@ -186,6 +193,10 @@ export class UISystem extends createSystem({
         this.audio.playMenuClick();
         this.gameSystem.startDailyChallenge();
       });
+      wire('btn-help', () => {
+        this.audio.playMenuClick();
+        this.gameSystem.setScreen('help');
+      });
     });
   }
 
@@ -202,6 +213,7 @@ export class UISystem extends createSystem({
       };
 
       wire('btn-undo', () => this.gameSystem.undoMove());
+      wire('btn-hint', () => this.gameSystem.showHint());
       wire('btn-restart', () => {
         this.audio.playMenuClick();
         this.gameSystem.restartLevel();
@@ -408,6 +420,21 @@ export class UISystem extends createSystem({
     });
   }
 
+  private bindHelpPanel(): void {
+    this.queries.helpPanel.subscribe('qualify', (entity) => {
+      this.helpEntity = entity;
+      const doc = entity.getValue(PanelDocument, 'document') as UIKitDocument | undefined;
+      if (!doc) return;
+      this.helpDoc = doc;
+
+      const btnBack = doc.getElementById('help-back') as UIKit.Text | undefined;
+      btnBack?.addEventListener('click', () => {
+        this.audio.playMenuClick();
+        this.gameSystem.setScreen('menu');
+      });
+    });
+  }
+
   private onScreenChange(screen: GameScreen): void {
     this.setPanelVisible(this.menuEntity, screen === 'menu');
     this.setPanelVisible(this.hudEntity, screen === 'playing');
@@ -417,6 +444,7 @@ export class UISystem extends createSystem({
     this.setPanelVisible(this.achievementsEntity, screen === 'achievements');
     this.setPanelVisible(this.statsEntity, screen === 'stats');
     this.setPanelVisible(this.settingsEntity, screen === 'settings');
+    this.setPanelVisible(this.helpEntity, screen === 'help');
 
     if (screen === 'menu') this.updateMenuPanel();
     if (screen === 'levelselect') this.updateLevelsPanel();
@@ -497,6 +525,25 @@ export class UISystem extends createSystem({
     setText(this.completeDoc, 'par-text', `Par: ${par}`);
     setText(this.completeDoc, 'stars-text', starStr);
 
+    // Time display
+    const timeStr = this.gameSystem.formatTime(this.gameSystem.elapsedTime);
+    setText(this.completeDoc, 'time-text', `Time: ${timeStr}`);
+
+    // Best time for this level
+    const bestTime = this.game.bestTimes[this.game.currentLevel];
+    if (bestTime !== undefined && bestTime < Infinity) {
+      setText(this.completeDoc, 'best-text', `Best: ${this.gameSystem.formatTime(bestTime)} / ${this.game.bestMoves[this.game.currentLevel] || '--'} moves`);
+    } else {
+      setText(this.completeDoc, 'best-text', 'New Record!');
+    }
+
+    // Save best time
+    const prevBest = this.game.bestTimes[this.game.currentLevel] ?? Infinity;
+    if (this.gameSystem.elapsedTime < prevBest) {
+      this.game.bestTimes[this.game.currentLevel] = this.gameSystem.elapsedTime;
+      this.game.saveProgress();
+    }
+
     const isLast = this.game.currentLevel >= LEVELS.length - 1;
     setVisible(this.completeDoc, 'btn-next', !isLast);
   }
@@ -564,6 +611,8 @@ export class UISystem extends createSystem({
     setText(this.statsDoc, 'stat-firsttry', String(this.game.levelsFirstTry));
     setText(this.statsDoc, 'stat-streak', String(this.game.longestNoUndoStreak));
     setText(this.statsDoc, 'stat-quick', String(this.game.levelsUnder10Moves));
+    setText(this.statsDoc, 'stat-hints', String(this.game.totalHintsUsed));
+    setText(this.statsDoc, 'stat-deadlocks', String(this.game.deadlocksTriggered));
   }
 
   private updateSettingsPanel(): void {
@@ -606,6 +655,7 @@ export class UISystem extends createSystem({
 
       setText(this.hudDoc, 'pushes-text', `Pushes: ${state.pushes}`);
       setText(this.hudDoc, 'par-text', `Par: ${par}`);
+      setText(this.hudDoc, 'timer-text', this.gameSystem.formatTime(this.gameSystem.elapsedTime));
     }
 
     // Toast timer

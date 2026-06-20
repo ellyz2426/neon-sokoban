@@ -92,6 +92,15 @@ export class BoardRenderer {
   private deadlockedBoxes = new Set<string>();
   private deadlockFlashTime = 0;
 
+  // Hint state
+  private hintedBox: string | null = null;
+  private hintTimer = 0;
+  private hintArrow: Mesh | null = null;
+
+  // Level entrance animation
+  private entranceProgress = 0;
+  private isEntering = false;
+
   // Trail
   private trailTimer = 0;
   private lastPlayerPos = new Vector3();
@@ -362,6 +371,15 @@ export class BoardRenderer {
     // Reset deadlock state
     this.deadlockedBoxes.clear();
     this.deadlockFlashTime = 0;
+
+    // Clear hint
+    this.hintedBox = null;
+    this.hintTimer = 0;
+
+    // Start entrance animation
+    this.entranceProgress = 0;
+    this.isEntering = true;
+    this.boardGroup.scale.setScalar(0.01);
   }
 
   private buildGridLines(boardWidth: number, boardHeight: number, offsetX: number, offsetZ: number): void {
@@ -410,6 +428,28 @@ export class BoardRenderer {
     }
   }
 
+  /** Highlight a hinted box with golden glow */
+  setHintBox(boxKey: string | null): void {
+    this.hintedBox = boxKey;
+    if (boxKey) {
+      this.hintTimer = 3.0; // Show hint for 3 seconds
+    }
+  }
+
+  /** Clear hint highlight */
+  clearHint(): void {
+    this.hintedBox = null;
+    this.hintTimer = 0;
+    // Restore box materials
+    const c = this.getColors();
+    for (const bm of this.boxMeshes) {
+      const onTarget = this.game.isBoxOnTarget(bm.targetRow, bm.targetCol);
+      bm.mesh.material = onTarget ? this.boxOnTargetMat : this.boxMat;
+      const edgeColor = onTarget ? c.boxOnTargetEdge : c.boxEdge;
+      (bm.edges.material as LineBasicMaterial).color.copy(edgeColor);
+    }
+  }
+
   updatePositions(): void {
     const state = this.game.state;
     if (!state) return;
@@ -455,6 +495,20 @@ export class BoardRenderer {
     const offsetX = this.boardCenterOffset.x;
     const offsetZ = this.boardCenterOffset.z;
     const c = this.getColors();
+
+    // Entrance animation
+    if (this.isEntering) {
+      this.entranceProgress = Math.min(1, this.entranceProgress + delta * 3);
+      // Elastic ease-out
+      const t = this.entranceProgress;
+      const p = 0.4;
+      const s = t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+      this.boardGroup.scale.setScalar(s);
+      if (this.entranceProgress >= 1) {
+        this.isEntering = false;
+        this.boardGroup.scale.setScalar(1);
+      }
+    }
 
     // Animate player
     this.playerCurrentPos.lerp(this.playerTargetPos, Math.min(1, delta * 15));
@@ -505,6 +559,35 @@ export class BoardRenderer {
 
     // Pulse player
     this.playerMat.emissiveIntensity = 0.6 + 0.3 * Math.sin(this.time * 2.5);
+
+    // Hint highlight on boxes
+    if (this.hintTimer > 0 && this.hintedBox) {
+      this.hintTimer -= delta;
+      const pulse = 0.6 + 0.4 * Math.sin(this.time * 6);
+
+      for (const bm of this.boxMeshes) {
+        const key = `${bm.targetRow},${bm.targetCol}`;
+        if (key === this.hintedBox) {
+          // Golden glow for hinted box
+          const hintMat = bm.mesh.material as MeshStandardMaterial;
+          if (hintMat !== this.boxOnTargetMat && hintMat !== this.boxDeadlockMat) {
+            hintMat.emissive.setHex(0xffcc00);
+            hintMat.emissiveIntensity = pulse;
+            hintMat.color.setHex(0xffaa00);
+          }
+          (bm.edges.material as LineBasicMaterial).color.setHex(0xffdd33);
+          // Scale pulse
+          const scalePulse = 1.0 + 0.08 * Math.sin(this.time * 4);
+          bm.group.scale.setScalar(scalePulse);
+        } else {
+          bm.group.scale.setScalar(1.0);
+        }
+      }
+
+      if (this.hintTimer <= 0) {
+        this.clearHint();
+      }
+    }
 
     // Deadlock flash on boxes
     if (this.deadlockFlashTime > 0) {

@@ -1,0 +1,144 @@
+<panel>
+  <style>
+    .root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8;
+      padding: 16;
+      background-color: rgba(5, 5, 20, 0.94);
+      border-radius: 12;
+      border-color: #00ccff;
+      border-width: 2;
+      width: 340;
+    }
+    .title {
+      font-size: 22;
+      color: #00ccff;
+      font-weight: bold;
+    }
+    .section-title {
+      font-size: 14;
+      color: #ffcc00;
+      font-weight: bold;
+    }
+    .row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: 280;
+      padding: 3;
+    }
+    .key {
+      font-size: 12;
+      color: #00eeff;
+      font-weight: bold;
+    }
+    .action {
+      font-size: 12;
+      color: #88aacc;
+    }
+    .divider {
+      height: 1;
+      width: 260;
+      background-color: #00ccff33;
+    }
+    .btn {
+      background-color: #00334466;
+      border-color: #00ccff;
+      border-width: 1;
+      border-radius: 8;
+      padding: 8;
+      width: 140;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #00557788;
+    }
+    .btn-text {
+      font-size: 14;
+      color: #00eeff;
+      font-weight: bold;
+    }
+    .spacer {
+      height: 4;
+    }
+    .tip {
+      font-size: 10;
+      color: #556677;
+    }
+  </style>
+  <container class="root">
+    <text class="title">CONTROLS</text>
+
+    <text class="section-title">-- KEYBOARD --</text>
+    <container class="row">
+      <text class="key">WASD / Arrows</text>
+      <text class="action">Move</text>
+    </container>
+    <container class="row">
+      <text class="key">Z</text>
+      <text class="action">Undo</text>
+    </container>
+    <container class="row">
+      <text class="key">R</text>
+      <text class="action">Restart Level</text>
+    </container>
+    <container class="row">
+      <text class="key">H</text>
+      <text class="action">Show Hint</text>
+    </container>
+    <container class="row">
+      <text class="key">Escape</text>
+      <text class="action">Pause</text>
+    </container>
+
+    <container class="divider"></container>
+
+    <text class="section-title">-- VR CONTROLLERS --</text>
+    <container class="row">
+      <text class="key">Thumbstick</text>
+      <text class="action">Move (either hand)</text>
+    </container>
+    <container class="row">
+      <text class="key">Right A</text>
+      <text class="action">Undo</text>
+    </container>
+    <container class="row">
+      <text class="key">Right B</text>
+      <text class="action">Pause</text>
+    </container>
+    <container class="row">
+      <text class="key">Left A</text>
+      <text class="action">Restart</text>
+    </container>
+    <container class="row">
+      <text class="key">Left B</text>
+      <text class="action">Menu</text>
+    </container>
+    <container class="row">
+      <text class="key">Laser Pointer</text>
+      <text class="action">Click UI Buttons</text>
+    </container>
+
+    <container class="divider"></container>
+
+    <text class="section-title">-- TIPS --</text>
+    <container class="row">
+      <text class="tip">Push all boxes onto targets to complete each level.</text>
+    </container>
+    <container class="row">
+      <text class="tip">Red flash = deadlock! Undo to fix.</text>
+    </container>
+    <container class="row">
+      <text class="tip">Use hints (H key) when stuck.</text>
+    </container>
+
+    <container class="spacer"></container>
+    <container class="btn" id="help-back">
+      <text class="btn-text">BACK</text>
+    </container>
+  </container>
+</panel>

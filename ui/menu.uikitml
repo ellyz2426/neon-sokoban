@@ -98,6 +98,9 @@
       <container class="btn-small" id="btn-settings">
         <text class="btn-small-text">SETTINGS</text>
       </container>
+      <container class="btn-small" id="btn-help">
+        <text class="btn-small-text">HELP</text>
+      </container>
     </container>
     <text class="progress" id="progress-text">0/30 Levels</text>
   </container>
