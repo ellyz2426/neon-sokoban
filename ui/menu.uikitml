@@ -84,6 +84,9 @@
     <container class="btn" id="btn-levels">
       <text class="btn-text">LEVEL SELECT</text>
     </container>
+    <container class="btn" id="btn-daily">
+      <text class="btn-text" id="daily-text">DAILY CHALLENGE</text>
+    </container>
     <container class="spacer"></container>
     <container class="bottom-row">
       <container class="btn-small" id="btn-achievements">

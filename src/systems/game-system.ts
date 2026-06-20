@@ -21,6 +21,7 @@ export class GameSystem extends createSystem({}) {
   private stickCooldown = 0;
   private _onScreenChange: ((screen: GameScreen) => void) | null = null;
   private prevPushCount = 0;
+  isDailyChallenge = false;
 
   setRefs(refs: {
     game: GameManager;
@@ -53,10 +54,22 @@ export class GameSystem extends createSystem({}) {
     this.game.onComplete(() => {
       this.audio.playComplete();
       this.boardRenderer.playCelebration();
+
+      // Save daily challenge if applicable
+      if (this.isDailyChallenge) {
+        this.game.saveDailyChallenge(this.game.state?.moves || 0);
+        this.isDailyChallenge = false;
+      }
+
       setTimeout(() => {
         this._screen = 'complete';
         this._onScreenChange?.('complete');
       }, 1200);
+    });
+
+    this.game.onDeadlock((positions) => {
+      this.boardRenderer.setDeadlockedBoxes(positions);
+      this.audio.playDeadlock();
     });
   }
 
@@ -80,6 +93,18 @@ export class GameSystem extends createSystem({}) {
     this.game.loadLevel(levelIdx);
     this.boardRenderer.buildBoard();
     this.prevPushCount = 0;
+    this.isDailyChallenge = false;
+    this._screen = 'playing';
+    this._onScreenChange?.('playing');
+    this.audio.startAmbientMusic();
+  }
+
+  startDailyChallenge(): void {
+    const idx = this.game.getDailyLevelIndex();
+    this.game.loadLevel(idx);
+    this.boardRenderer.buildBoard();
+    this.prevPushCount = 0;
+    this.isDailyChallenge = true;
     this._screen = 'playing';
     this._onScreenChange?.('playing');
     this.audio.startAmbientMusic();

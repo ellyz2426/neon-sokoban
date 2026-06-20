@@ -23,6 +23,8 @@ import {
   DoubleSide,
   RingGeometry,
   Object3D,
+  BufferGeometry,
+  Float32BufferAttribute,
 } from '@iwsdk/core';
 import { GameManager, CellType } from './game-manager';
 import { ThemeManager, ThemeColors } from './themes';
@@ -75,12 +77,20 @@ export class BoardRenderer {
   private floorMat!: MeshStandardMaterial;
   private boxMat!: MeshStandardMaterial;
   private boxOnTargetMat!: MeshStandardMaterial;
+  private boxDeadlockMat!: MeshStandardMaterial;
   private targetMat!: MeshStandardMaterial;
   private playerMat!: MeshStandardMaterial;
   private glowRingMat!: MeshBasicMaterial;
   private groundMesh!: Mesh;
   private boardLight!: PointLight;
   private ambientLight!: AmbientLight;
+
+  // Grid lines
+  private gridLines: LineSegments | null = null;
+
+  // Deadlock state
+  private deadlockedBoxes = new Set<string>();
+  private deadlockFlashTime = 0;
 
   // Trail
   private trailTimer = 0;
@@ -154,6 +164,13 @@ export class BoardRenderer {
       color: c.boxOnTarget,
       emissive: c.boxOnTarget,
       emissiveIntensity: 0.6,
+      metalness: 0.6,
+      roughness: 0.3,
+    });
+    this.boxDeadlockMat = new MeshStandardMaterial({
+      color: new Color(0xff2200),
+      emissive: new Color(0xff0000),
+      emissiveIntensity: 0.8,
       metalness: 0.6,
       roughness: 0.3,
     });
@@ -338,6 +355,59 @@ export class BoardRenderer {
     this.playerCurrentPos.set(px, 0, pz);
     this.lastPlayerPos.set(px, 0, pz);
     this.boardGroup.add(this.playerGroup);
+
+    // Build grid lines
+    this.buildGridLines(width, height, offsetX, offsetZ);
+
+    // Reset deadlock state
+    this.deadlockedBoxes.clear();
+    this.deadlockFlashTime = 0;
+  }
+
+  private buildGridLines(boardWidth: number, boardHeight: number, offsetX: number, offsetZ: number): void {
+    if (this.gridLines) {
+      this.boardGroup.remove(this.gridLines);
+    }
+
+    const positions: number[] = [];
+    const c = this.getColors();
+    const halfCell = CELL_SIZE / 2;
+    const startX = offsetX - halfCell;
+    const startZ = offsetZ - halfCell;
+    const endX = offsetX + (boardWidth - 1) * CELL_SIZE + halfCell;
+    const endZ = offsetZ + (boardHeight - 1) * CELL_SIZE + halfCell;
+
+    // Horizontal lines
+    for (let r = 0; r <= boardHeight; r++) {
+      const z = startZ + r * CELL_SIZE;
+      positions.push(startX, FLOOR_Y + 0.003, z, endX, FLOOR_Y + 0.003, z);
+    }
+
+    // Vertical lines
+    for (let col = 0; col <= boardWidth; col++) {
+      const x = startX + col * CELL_SIZE;
+      positions.push(x, FLOOR_Y + 0.003, startZ, x, FLOOR_Y + 0.003, endZ);
+    }
+
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+
+    const lineMat = new LineBasicMaterial({
+      color: c.floorLine,
+      transparent: true,
+      opacity: 0.25,
+    });
+
+    this.gridLines = new LineSegments(geometry, lineMat);
+    this.boardGroup.add(this.gridLines);
+  }
+
+  /** Mark boxes as deadlocked (flash red) */
+  setDeadlockedBoxes(keys: Set<string>): void {
+    this.deadlockedBoxes = keys;
+    if (keys.size > 0) {
+      this.deadlockFlashTime = 1.5; // Flash for 1.5 seconds
+    }
   }
 
   updatePositions(): void {
@@ -435,6 +505,32 @@ export class BoardRenderer {
 
     // Pulse player
     this.playerMat.emissiveIntensity = 0.6 + 0.3 * Math.sin(this.time * 2.5);
+
+    // Deadlock flash on boxes
+    if (this.deadlockFlashTime > 0) {
+      this.deadlockFlashTime -= delta;
+      const flashIntensity = Math.sin(this.time * 12) * 0.5 + 0.5;
+      this.boxDeadlockMat.emissiveIntensity = 0.5 + flashIntensity * 0.8;
+
+      for (const bm of this.boxMeshes) {
+        const key = `${bm.targetRow},${bm.targetCol}`;
+        if (this.deadlockedBoxes.has(key)) {
+          bm.mesh.material = this.boxDeadlockMat;
+          (bm.edges.material as LineBasicMaterial).color.set(0xff4444);
+        }
+      }
+
+      if (this.deadlockFlashTime <= 0) {
+        // Restore original materials
+        for (const bm of this.boxMeshes) {
+          const onTarget = this.game.isBoxOnTarget(bm.targetRow, bm.targetCol);
+          bm.mesh.material = onTarget ? this.boxOnTargetMat : this.boxMat;
+          const edgeColor = onTarget ? c.boxOnTargetEdge : c.boxEdge;
+          (bm.edges.material as LineBasicMaterial).color.copy(edgeColor);
+        }
+        this.deadlockedBoxes.clear();
+      }
+    }
 
     // Update particles
     this.particles.update(delta);

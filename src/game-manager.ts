@@ -2,6 +2,7 @@
 
 import { LEVELS, LevelDef } from './levels';
 import { AchievementTracker, AchievementStats, Achievement } from './achievements';
+import { findDeadlockedBoxes } from './deadlock';
 
 export const enum CellType {
   Empty = 0,
@@ -49,6 +50,7 @@ export class GameManager {
   private _onMove: (() => void) | null = null;
   private _onComplete: (() => void) | null = null;
   private _onAchievement: ((ach: Achievement) => void) | null = null;
+  private _onDeadlock: ((positions: Set<string>) => void) | null = null;
   bestMoves: number[] = [];
   completedLevels: Set<number> = new Set();
   gameMode: 'classic' | 'timed' | 'challenge' = 'classic';
@@ -73,6 +75,12 @@ export class GameManager {
   longestNoUndoStreak = 0;
   threeStarCount = 0;
   sessionStartTime = 0;
+  deadlocksTriggered = 0;
+
+  // Daily challenge
+  dailyChallengeCompleted = false;
+  dailyChallengeLevel = -1;
+  dailyChallengeBestMoves = Infinity;
 
   // Achievement system
   achievements: AchievementTracker;
@@ -143,6 +151,7 @@ export class GameManager {
 
   onMove(cb: () => void): void { this._onMove = cb; }
   onComplete(cb: () => void): void { this._onComplete = cb; }
+  onDeadlock(cb: (positions: Set<string>) => void): void { this._onDeadlock = cb; }
   onAchievement(cb: (ach: Achievement) => void): void {
     this._onAchievement = cb;
     this.achievements.onEarned((ach) => this._onAchievement?.(ach));
@@ -277,6 +286,13 @@ export class GameManager {
     this.totalMoves++;
 
     this._onMove?.();
+
+    // Check for deadlock
+    const deadlocked = findDeadlockedBoxes(this.state);
+    if (deadlocked.size > 0) {
+      this.deadlocksTriggered++;
+      this._onDeadlock?.(deadlocked);
+    }
 
     if (this.checkComplete()) {
       this.state.completed = true;
@@ -428,7 +444,9 @@ export class GameManager {
       mediumComplete: tiers.medium,
       hardComplete: tiers.hard,
       expertComplete: tiers.expert,
-      allComplete: this.completedLevels.size >= 30,
+      masterComplete: tiers.master,
+      grandmasterComplete: tiers.grandmaster,
+      allComplete: this.completedLevels.size >= LEVELS.length,
       longestStreak: this.longestNoUndoStreak,
       noUndoLevels: this.noUndoLevels,
       totalRestarts: this.totalRestarts,
@@ -436,11 +454,13 @@ export class GameManager {
       levelsUnder10Moves: this.levelsUnder10Moves,
       levelsFirstTry: this.levelsFirstTry,
       currentSession: this.sessionLevels,
+      dailyChallengesCompleted: this.dailyChallengeCompleted ? 1 : 0,
+      deadlocksTriggered: this.deadlocksTriggered,
     };
     this.achievements.check(stats);
   }
 
-  getTierCompletion(): { tutorial: boolean; easy: boolean; medium: boolean; hard: boolean; expert: boolean } {
+  getTierCompletion(): { tutorial: boolean; easy: boolean; medium: boolean; hard: boolean; expert: boolean; master: boolean; grandmaster: boolean } {
     const check = (start: number, end: number) => {
       for (let i = start; i <= end; i++) {
         if (!this.completedLevels.has(i)) return false;
@@ -453,6 +473,8 @@ export class GameManager {
       medium: check(12, 17),
       hard: check(18, 23),
       expert: check(24, 29),
+      master: check(30, 39),
+      grandmaster: check(40, 49),
     };
   }
 
@@ -461,5 +483,42 @@ export class GameManager {
     const m = Math.floor(s / 60);
     const sec = s % 60;
     return `${m}:${sec.toString().padStart(2, '0')}`;
+  }
+
+  /** Get today's daily challenge level index based on date hash */
+  getDailyLevelIndex(): number {
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+    let hash = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+      hash = ((hash << 5) - hash + dateStr.charCodeAt(i)) | 0;
+    }
+    return Math.abs(hash) % LEVELS.length;
+  }
+
+  /** Check if daily challenge was completed today */
+  isDailyChallengeCompleted(): boolean {
+    try {
+      const saved = localStorage.getItem('neon-sokoban-daily');
+      if (saved) {
+        const d = JSON.parse(saved);
+        const today = new Date().toDateString();
+        return d.date === today && d.completed;
+      }
+    } catch { /* ignore */ }
+    return false;
+  }
+
+  /** Save daily challenge completion */
+  saveDailyChallenge(moves: number): void {
+    try {
+      const today = new Date().toDateString();
+      localStorage.setItem('neon-sokoban-daily', JSON.stringify({
+        date: today,
+        completed: true,
+        moves,
+        level: this.getDailyLevelIndex(),
+      }));
+    } catch { /* ignore */ }
   }
 }

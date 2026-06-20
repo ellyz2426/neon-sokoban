@@ -94,6 +94,10 @@ export class UISystem extends createSystem({
   private settingsEntity: import('@iwsdk/core').Entity | null = null;
   private toastEntity: import('@iwsdk/core').Entity | null = null;
 
+  // Level select pagination
+  private levelPage = 0;
+  private readonly LEVELS_PER_PAGE = 25;
+
   // Achievement page state
   private achPage = 0;
   private achCategories: AchievementCategory[] = ['puzzle', 'efficiency', 'explorer', 'dedication', 'mastery'];
@@ -154,6 +158,7 @@ export class UISystem extends createSystem({
       });
       wire('btn-levels', () => {
         this.audio.playMenuClick();
+        this.levelPage = 0;
         this.gameSystem.setScreen('levelselect');
       });
       wire('btn-continue', () => {
@@ -176,6 +181,10 @@ export class UISystem extends createSystem({
       wire('btn-settings', () => {
         this.audio.playMenuClick();
         this.gameSystem.setScreen('settings');
+      });
+      wire('btn-daily', () => {
+        this.audio.playMenuClick();
+        this.gameSystem.startDailyChallenge();
       });
     });
   }
@@ -211,19 +220,40 @@ export class UISystem extends createSystem({
       if (!doc) return;
       this.levelsDoc = doc;
 
-      for (let i = 0; i < LEVELS.length; i++) {
-        const btn = doc.getElementById(`lvl-${i}`) as UIKit.Text | undefined;
+      // Wire level buttons (25 per page)
+      for (let i = 0; i < this.LEVELS_PER_PAGE; i++) {
+        const btn = doc.getElementById(`lvl-p${i}`) as UIKit.Text | undefined;
         if (btn) {
-          const idx = i;
+          const slot = i;
           btn.addEventListener('click', () => {
-            this.audio.playMenuClick();
-            this.gameSystem.startGame(idx);
+            const levelIdx = this.levelPage * this.LEVELS_PER_PAGE + slot;
+            if (levelIdx < LEVELS.length) {
+              this.audio.playMenuClick();
+              this.gameSystem.startGame(levelIdx);
+            }
           });
         }
       }
 
-      const btnBack = doc.getElementById('btn-back') as UIKit.Text | undefined;
-      btnBack?.addEventListener('click', () => {
+      const wire = (id: string, cb: () => void) => {
+        const el = doc.getElementById(id) as UIKit.Text | undefined;
+        el?.addEventListener('click', cb);
+      };
+
+      wire('page-prev', () => {
+        this.audio.playMenuClick();
+        const maxPage = Math.ceil(LEVELS.length / this.LEVELS_PER_PAGE) - 1;
+        this.levelPage = (this.levelPage - 1 + maxPage + 1) % (maxPage + 1);
+        this.updateLevelsPanel();
+      });
+      wire('page-next', () => {
+        this.audio.playMenuClick();
+        const maxPage = Math.ceil(LEVELS.length / this.LEVELS_PER_PAGE) - 1;
+        this.levelPage = (this.levelPage + 1) % (maxPage + 1);
+        this.updateLevelsPanel();
+      });
+
+      wire('btn-back', () => {
         this.audio.playMenuClick();
         this.gameSystem.setScreen('menu');
       });
@@ -406,25 +436,50 @@ export class UISystem extends createSystem({
     const completed = this.game.completedLevels.size;
     const total = LEVELS.length;
     setText(this.menuDoc, 'progress-text', `${completed}/${total} Levels`);
+
+    // Update daily challenge button text
+    if (this.game.isDailyChallengeCompleted()) {
+      setText(this.menuDoc, 'daily-text', 'DAILY DONE ✓');
+    } else {
+      setText(this.menuDoc, 'daily-text', 'DAILY CHALLENGE');
+    }
   }
 
   private updateLevelsPanel(): void {
     if (!this.levelsDoc) return;
-    for (let i = 0; i < LEVELS.length; i++) {
-      const btn = this.levelsDoc.getElementById(`lvl-${i}`) as UIKit.Text | undefined;
-      if (btn) {
-        const completed = this.game.completedLevels.has(i);
-        const best = this.game.bestMoves[i];
-        const par = LEVELS[i].par;
-        let label = `${i + 1}`;
+
+    const totalPages = Math.ceil(LEVELS.length / this.LEVELS_PER_PAGE);
+    const startIdx = this.levelPage * this.LEVELS_PER_PAGE;
+
+    setText(this.levelsDoc, 'page-label', `Page ${this.levelPage + 1}/${totalPages}`);
+
+    // Tier headers per page
+    const tierHeaders = ['TUTORIAL / EASY / MEDIUM', 'HARD / EXPERT / MASTER / GRANDMASTER'];
+    setText(this.levelsDoc, 'tier-header', tierHeaders[this.levelPage] || '');
+
+    for (let i = 0; i < this.LEVELS_PER_PAGE; i++) {
+      const levelIdx = startIdx + i;
+      const btn = this.levelsDoc.getElementById(`lvl-p${i}`) as UIKit.Text | undefined;
+      const textEl = this.levelsDoc.getElementById(`lvl-p${i}-t`) as UIKit.Text | undefined;
+
+      if (levelIdx < LEVELS.length) {
+        setVisible(this.levelsDoc, `lvl-p${i}`, true);
+        const completed = this.game.completedLevels.has(levelIdx);
+        const best = this.game.bestMoves[levelIdx];
+        const par = LEVELS[levelIdx].par;
+        let label = `${levelIdx + 1}`;
         if (completed && best !== undefined) {
           const stars = best <= par ? '***' : best <= par * 1.5 ? '**' : '*';
-          label = `${i + 1} ${stars}`;
+          label = `${levelIdx + 1} ${stars}`;
         }
-        btn.setProperties({ text: label });
+        textEl?.setProperties({ text: label });
         if (completed) {
-          btn.setProperties({ backgroundColor: '#004422' });
+          btn?.setProperties({ backgroundColor: '#004422' });
+        } else {
+          btn?.setProperties({ backgroundColor: '#001a2266' });
         }
+      } else {
+        setVisible(this.levelsDoc, `lvl-p${i}`, false);
       }
     }
   }
@@ -532,10 +587,25 @@ export class UISystem extends createSystem({
     if (this.gameSystem.screen === 'playing' && this.hudDoc && this.game.state) {
       const state = this.game.state;
       const level = LEVELS[this.game.currentLevel];
-      setText(this.hudDoc, 'level-text', `Level ${this.game.currentLevel + 1}: ${level?.name || ''}`);
-      setText(this.hudDoc, 'moves-text', `Moves: ${state.moves}`);
+      const par = level?.par || 0;
+
+      // Daily challenge label
+      const prefix = this.gameSystem.isDailyChallenge ? 'DAILY: ' : `Level ${this.game.currentLevel + 1}: `;
+      setText(this.hudDoc, 'level-text', `${prefix}${level?.name || ''}`);
+
+      // Color-code moves based on efficiency vs par
+      let movesColor = '#88aacc'; // default
+      if (par > 0 && state.moves > 0) {
+        const ratio = state.moves / par;
+        if (ratio <= 1.0) movesColor = '#00ff66'; // green — at or under par
+        else if (ratio <= 1.5) movesColor = '#ffcc00'; // yellow — near par
+        else movesColor = '#ff4444'; // red — over par
+      }
+      const movesEl = this.hudDoc.getElementById('moves-text') as UIKit.Text | undefined;
+      movesEl?.setProperties({ text: `Moves: ${state.moves}`, color: movesColor });
+
       setText(this.hudDoc, 'pushes-text', `Pushes: ${state.pushes}`);
-      setText(this.hudDoc, 'par-text', `Par: ${level?.par || 0}`);
+      setText(this.hudDoc, 'par-text', `Par: ${par}`);
     }
 
     // Toast timer

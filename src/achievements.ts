@@ -25,6 +25,8 @@ export interface AchievementStats {
   mediumComplete: boolean; // levels 13-18
   hardComplete: boolean; // levels 19-24
   expertComplete: boolean; // levels 25-30
+  masterComplete: boolean; // levels 31-40
+  grandmasterComplete: boolean; // levels 41-50
   allComplete: boolean;
   longestStreak: number; // consecutive levels without undo
   noUndoLevels: number; // levels completed without any undo
@@ -33,6 +35,8 @@ export interface AchievementStats {
   levelsUnder10Moves: number;
   levelsFirstTry: number; // completed without restart
   currentSession: number; // levels completed this session
+  dailyChallengesCompleted: number;
+  deadlocksTriggered: number;
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -44,18 +48,23 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'adept', name: 'Adept', description: 'Complete all Medium levels', category: 'puzzle', icon: '[M]', condition: (s) => s.mediumComplete },
   { id: 'veteran', name: 'Veteran', description: 'Complete all Hard levels', category: 'puzzle', icon: '[H]', condition: (s) => s.hardComplete },
   { id: 'grandmaster', name: 'Grandmaster', description: 'Complete all Expert levels', category: 'puzzle', icon: '[X]', condition: (s) => s.expertComplete },
-  { id: 'completionist', name: 'Completionist', description: 'Complete all 30 levels', category: 'puzzle', icon: '[!]', condition: (s) => s.allComplete },
+  { id: 'completionist', name: 'Completionist', description: 'Complete all 30 basic levels', category: 'puzzle', icon: '[!]', condition: (s) => s.uniqueLevelsCompleted >= 30 },
   { id: 'ten_solves', name: 'Double Digits', description: 'Complete 10 unique levels', category: 'puzzle', icon: '[*]', condition: (s) => s.uniqueLevelsCompleted >= 10 },
   { id: 'twenty_solves', name: 'Rolling', description: 'Complete 20 unique levels', category: 'puzzle', icon: '[*]', condition: (s) => s.uniqueLevelsCompleted >= 20 },
+  { id: 'master_clear', name: 'Master Class', description: 'Complete all Master levels', category: 'puzzle', icon: '[M]', condition: (s) => s.masterComplete },
+  { id: 'grandmaster_clear', name: 'Grandmaster', description: 'Complete all Grandmaster levels', category: 'puzzle', icon: '[G]', condition: (s) => s.grandmasterComplete },
+  { id: 'total_completionist', name: 'Total Completionist', description: 'Complete all 50 levels', category: 'puzzle', icon: '[!]', condition: (s) => s.allComplete },
+  { id: 'thirty_solves', name: 'Halfway There', description: 'Complete 30 unique levels', category: 'puzzle', icon: '[*]', condition: (s) => s.uniqueLevelsCompleted >= 30 },
+  { id: 'forty_solves', name: 'Almost There', description: 'Complete 40 unique levels', category: 'puzzle', icon: '[*]', condition: (s) => s.uniqueLevelsCompleted >= 40 },
 
   // EFFICIENCY category (skill-based)
   { id: 'on_par', name: 'On Par', description: 'Complete a level at or under par', category: 'efficiency', icon: '(=)', condition: (s) => s.perfectLevels >= 1 },
   { id: 'five_perfect', name: 'Sharpshooter', description: 'Complete 5 levels at par', category: 'efficiency', icon: '(=)', condition: (s) => s.perfectLevels >= 5 },
   { id: 'ten_perfect', name: 'Precision Master', description: 'Complete 10 levels at par', category: 'efficiency', icon: '(=)', condition: (s) => s.perfectLevels >= 10 },
-  { id: 'all_perfect', name: 'Absolute Perfection', description: 'Complete all levels at par', category: 'efficiency', icon: '(=)', condition: (s) => s.perfectLevels >= 30 },
+  { id: 'all_perfect', name: 'Absolute Perfection', description: 'Complete all 50 levels at par', category: 'efficiency', icon: '(=)', condition: (s) => s.perfectLevels >= 50 },
   { id: 'three_stars_5', name: 'Star Collector', description: 'Earn 3 stars on 5 levels', category: 'efficiency', icon: '(3)', condition: (s) => s.threeStarLevels >= 5 },
   { id: 'three_stars_15', name: 'Star Hoarder', description: 'Earn 3 stars on 15 levels', category: 'efficiency', icon: '(3)', condition: (s) => s.threeStarLevels >= 15 },
-  { id: 'three_stars_all', name: 'All Stars', description: 'Earn 3 stars on all levels', category: 'efficiency', icon: '(3)', condition: (s) => s.threeStarLevels >= 30 },
+  { id: 'three_stars_all', name: 'All Stars', description: 'Earn 3 stars on all 50 levels', category: 'efficiency', icon: '(3)', condition: (s) => s.threeStarLevels >= 50 },
   { id: 'no_undo_1', name: 'No Regrets', description: 'Complete a level without undo', category: 'efficiency', icon: '(!)', condition: (s) => s.noUndoLevels >= 1 },
   { id: 'no_undo_5', name: 'Confident', description: 'Complete 5 levels without undo', category: 'efficiency', icon: '(!)', condition: (s) => s.noUndoLevels >= 5 },
   { id: 'no_undo_10', name: 'Unwavering', description: 'Complete 10 levels without undo', category: 'efficiency', icon: '(!)', condition: (s) => s.noUndoLevels >= 10 },
@@ -86,7 +95,9 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'streak_3', name: 'Hot Streak', description: '3 consecutive levels without undo', category: 'mastery', icon: '|S|', condition: (s) => s.longestStreak >= 3 },
   { id: 'streak_5', name: 'Blazing', description: '5 consecutive levels without undo', category: 'mastery', icon: '|S|', condition: (s) => s.longestStreak >= 5 },
   { id: 'half_three_star', name: 'Half Perfect', description: '3 stars on 15 levels + all tutorial done', category: 'mastery', icon: '|*|', condition: (s) => s.threeStarLevels >= 15 && s.tutorialComplete },
-  { id: 'true_master', name: 'True Master', description: 'All levels complete, 20+ at par, 500+ moves', category: 'mastery', icon: '|G|', condition: (s) => s.allComplete && s.perfectLevels >= 20 && s.totalMoves >= 500 },
+  { id: 'true_master', name: 'True Master', description: 'All 50 levels done, 30+ at par, 1000+ moves', category: 'mastery', icon: '|G|', condition: (s) => s.allComplete && s.perfectLevels >= 30 && s.totalMoves >= 1000 },
+  { id: 'daily_first', name: 'Daily Player', description: 'Complete your first daily challenge', category: 'mastery', icon: '|D|', condition: (s) => s.dailyChallengesCompleted >= 1 },
+  { id: 'deadlock_awareness', name: 'Deadlock Detective', description: 'Trigger 10 deadlock warnings', category: 'explorer', icon: '{!}', condition: (s) => s.deadlocksTriggered >= 10 },
 ];
 
 export class AchievementTracker {

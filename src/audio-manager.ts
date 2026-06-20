@@ -294,4 +294,53 @@ export class AudioManager {
     osc.start();
     osc.stop(this.ctx.currentTime + 0.08);
   }
+
+  playDeadlock(): void {
+    this.init();
+    if (!this.ctx || !this.sfxGain || !this.sfxEnabled) return;
+    this.ensureResumed();
+    const t = this.ctx.currentTime;
+    // Descending warning tone
+    const osc1 = this.ctx.createOscillator();
+    const gain1 = this.ctx.createGain();
+    osc1.type = 'sawtooth';
+    osc1.frequency.setValueAtTime(400, t);
+    osc1.frequency.exponentialRampToValueAtTime(100, t + 0.3);
+    gain1.gain.setValueAtTime(0.08, t);
+    gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    osc1.connect(gain1).connect(this.sfxGain);
+    osc1.start(t);
+    osc1.stop(t + 0.35);
+
+    // Second low buzz
+    const osc2 = this.ctx.createOscillator();
+    const gain2 = this.ctx.createGain();
+    osc2.type = 'square';
+    osc2.frequency.value = 80;
+    gain2.gain.setValueAtTime(0, t + 0.1);
+    gain2.gain.linearRampToValueAtTime(0.06, t + 0.15);
+    gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    osc2.connect(gain2).connect(this.sfxGain);
+    osc2.start(t + 0.1);
+    osc2.stop(t + 0.4);
+  }
+
+  playThemeChange(): void {
+    this.init();
+    if (!this.ctx || !this.sfxGain || !this.sfxEnabled) return;
+    this.ensureResumed();
+    const t = this.ctx.currentTime;
+    [523.25, 783.99].forEach((freq, i) => {
+      const osc = this.ctx!.createOscillator();
+      const gain = this.ctx!.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t + i * 0.06);
+      gain.gain.linearRampToValueAtTime(0.1, t + i * 0.06 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.2);
+      osc.connect(gain).connect(this.sfxGain!);
+      osc.start(t + i * 0.06);
+      osc.stop(t + i * 0.06 + 0.2);
+    });
+  }
 }

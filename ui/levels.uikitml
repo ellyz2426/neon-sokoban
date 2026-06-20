@@ -4,29 +4,34 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10;
-      padding: 16;
+      gap: 6;
+      padding: 12;
       background-color: rgba(5, 5, 20, 0.92);
       border-radius: 12;
       border-color: #00ccff;
       border-width: 2;
-      width: 380;
+      width: 420;
     }
     .title {
       font-size: 20;
       color: #00ccff;
       font-weight: bold;
     }
+    .section-header {
+      font-size: 11;
+      color: #668899;
+      font-weight: bold;
+    }
     .grid {
       display: flex;
       flex-direction: column;
-      gap: 4;
-      width: 360;
+      gap: 3;
+      width: 400;
     }
     .row {
       display: flex;
       flex-direction: row;
-      gap: 4;
+      gap: 3;
       justify-content: center;
     }
     .lvl-btn {
@@ -34,8 +39,8 @@
       border-color: #00ccff44;
       border-width: 1;
       border-radius: 4;
-      padding: 6;
-      width: 48;
+      padding: 4;
+      width: 36;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -43,16 +48,39 @@
       hover-background-color: #00446688;
     }
     .lvl-text {
-      font-size: 10;
+      font-size: 9;
       color: #00bbdd;
+    }
+    .nav-row {
+      display: flex;
+      flex-direction: row;
+      gap: 8;
+      justify-content: center;
+    }
+    .nav-btn {
+      background-color: #11223344;
+      border-color: #00ccff66;
+      border-width: 1;
+      border-radius: 6;
+      padding: 6;
+      width: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #22446666;
+    }
+    .nav-text {
+      font-size: 11;
+      color: #88bbdd;
     }
     .back-btn {
       background-color: #33001166;
       border-color: #ff008866;
       border-width: 1;
       border-radius: 8;
-      padding: 8;
-      width: 120;
+      padding: 6;
+      width: 100;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -60,53 +88,54 @@
       hover-background-color: #55002288;
     }
     .back-text {
-      font-size: 14;
+      font-size: 12;
       color: #ff44aa;
+    }
+    .page-text {
+      font-size: 10;
+      color: #668899;
     }
   </style>
   <container class="root">
     <text class="title">SELECT LEVEL</text>
+    <text class="page-text" id="page-label">Page 1/2</text>
+    <text class="section-header" id="tier-header">TUTORIAL / EASY / MEDIUM</text>
     <container class="grid">
       <container class="row">
-        <container class="lvl-btn" id="lvl-0"><text class="lvl-text">1</text></container>
-        <container class="lvl-btn" id="lvl-1"><text class="lvl-text">2</text></container>
-        <container class="lvl-btn" id="lvl-2"><text class="lvl-text">3</text></container>
-        <container class="lvl-btn" id="lvl-3"><text class="lvl-text">4</text></container>
-        <container class="lvl-btn" id="lvl-4"><text class="lvl-text">5</text></container>
-        <container class="lvl-btn" id="lvl-5"><text class="lvl-text">6</text></container>
+        <container class="lvl-btn" id="lvl-p0"><text class="lvl-text" id="lvl-p0-t">1</text></container>
+        <container class="lvl-btn" id="lvl-p1"><text class="lvl-text" id="lvl-p1-t">2</text></container>
+        <container class="lvl-btn" id="lvl-p2"><text class="lvl-text" id="lvl-p2-t">3</text></container>
+        <container class="lvl-btn" id="lvl-p3"><text class="lvl-text" id="lvl-p3-t">4</text></container>
+        <container class="lvl-btn" id="lvl-p4"><text class="lvl-text" id="lvl-p4-t">5</text></container>
+        <container class="lvl-btn" id="lvl-p5"><text class="lvl-text" id="lvl-p5-t">6</text></container>
+        <container class="lvl-btn" id="lvl-p6"><text class="lvl-text" id="lvl-p6-t">7</text></container>
+        <container class="lvl-btn" id="lvl-p7"><text class="lvl-text" id="lvl-p7-t">8</text></container>
+        <container class="lvl-btn" id="lvl-p8"><text class="lvl-text" id="lvl-p8-t">9</text></container>
+        <container class="lvl-btn" id="lvl-p9"><text class="lvl-text" id="lvl-p9-t">10</text></container>
       </container>
       <container class="row">
-        <container class="lvl-btn" id="lvl-6"><text class="lvl-text">7</text></container>
-        <container class="lvl-btn" id="lvl-7"><text class="lvl-text">8</text></container>
-        <container class="lvl-btn" id="lvl-8"><text class="lvl-text">9</text></container>
-        <container class="lvl-btn" id="lvl-9"><text class="lvl-text">10</text></container>
-        <container class="lvl-btn" id="lvl-10"><text class="lvl-text">11</text></container>
-        <container class="lvl-btn" id="lvl-11"><text class="lvl-text">12</text></container>
+        <container class="lvl-btn" id="lvl-p10"><text class="lvl-text" id="lvl-p10-t">11</text></container>
+        <container class="lvl-btn" id="lvl-p11"><text class="lvl-text" id="lvl-p11-t">12</text></container>
+        <container class="lvl-btn" id="lvl-p12"><text class="lvl-text" id="lvl-p12-t">13</text></container>
+        <container class="lvl-btn" id="lvl-p13"><text class="lvl-text" id="lvl-p13-t">14</text></container>
+        <container class="lvl-btn" id="lvl-p14"><text class="lvl-text" id="lvl-p14-t">15</text></container>
+        <container class="lvl-btn" id="lvl-p15"><text class="lvl-text" id="lvl-p15-t">16</text></container>
+        <container class="lvl-btn" id="lvl-p16"><text class="lvl-text" id="lvl-p16-t">17</text></container>
+        <container class="lvl-btn" id="lvl-p17"><text class="lvl-text" id="lvl-p17-t">18</text></container>
+        <container class="lvl-btn" id="lvl-p18"><text class="lvl-text" id="lvl-p18-t">19</text></container>
+        <container class="lvl-btn" id="lvl-p19"><text class="lvl-text" id="lvl-p19-t">20</text></container>
       </container>
       <container class="row">
-        <container class="lvl-btn" id="lvl-12"><text class="lvl-text">13</text></container>
-        <container class="lvl-btn" id="lvl-13"><text class="lvl-text">14</text></container>
-        <container class="lvl-btn" id="lvl-14"><text class="lvl-text">15</text></container>
-        <container class="lvl-btn" id="lvl-15"><text class="lvl-text">16</text></container>
-        <container class="lvl-btn" id="lvl-16"><text class="lvl-text">17</text></container>
-        <container class="lvl-btn" id="lvl-17"><text class="lvl-text">18</text></container>
+        <container class="lvl-btn" id="lvl-p20"><text class="lvl-text" id="lvl-p20-t">21</text></container>
+        <container class="lvl-btn" id="lvl-p21"><text class="lvl-text" id="lvl-p21-t">22</text></container>
+        <container class="lvl-btn" id="lvl-p22"><text class="lvl-text" id="lvl-p22-t">23</text></container>
+        <container class="lvl-btn" id="lvl-p23"><text class="lvl-text" id="lvl-p23-t">24</text></container>
+        <container class="lvl-btn" id="lvl-p24"><text class="lvl-text" id="lvl-p24-t">25</text></container>
       </container>
-      <container class="row">
-        <container class="lvl-btn" id="lvl-18"><text class="lvl-text">19</text></container>
-        <container class="lvl-btn" id="lvl-19"><text class="lvl-text">20</text></container>
-        <container class="lvl-btn" id="lvl-20"><text class="lvl-text">21</text></container>
-        <container class="lvl-btn" id="lvl-21"><text class="lvl-text">22</text></container>
-        <container class="lvl-btn" id="lvl-22"><text class="lvl-text">23</text></container>
-        <container class="lvl-btn" id="lvl-23"><text class="lvl-text">24</text></container>
-      </container>
-      <container class="row">
-        <container class="lvl-btn" id="lvl-24"><text class="lvl-text">25</text></container>
-        <container class="lvl-btn" id="lvl-25"><text class="lvl-text">26</text></container>
-        <container class="lvl-btn" id="lvl-26"><text class="lvl-text">27</text></container>
-        <container class="lvl-btn" id="lvl-27"><text class="lvl-text">28</text></container>
-        <container class="lvl-btn" id="lvl-28"><text class="lvl-text">29</text></container>
-        <container class="lvl-btn" id="lvl-29"><text class="lvl-text">30</text></container>
-      </container>
+    </container>
+    <container class="nav-row">
+      <container class="nav-btn" id="page-prev"><text class="nav-text">PREV</text></container>
+      <container class="nav-btn" id="page-next"><text class="nav-text">NEXT</text></container>
     </container>
     <container class="back-btn" id="btn-back">
       <text class="back-text">BACK</text>
