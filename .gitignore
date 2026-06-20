@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.iwsdk/
+screenshot-*.png
+.mcp.json
+public/ui/*.json

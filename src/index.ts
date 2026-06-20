@@ -1,0 +1,91 @@
+// Neon Sokoban VR - Entry Point
+
+import {
+  World,
+  PanelUI,
+} from '@iwsdk/core';
+import { GameManager } from './game-manager';
+import { BoardRenderer } from './board-renderer';
+import { AudioManager } from './audio-manager';
+import { GameSystem } from './systems/game-system';
+import { UISystem } from './systems/ui-system';
+
+async function main(): Promise<void> {
+  const container = document.getElementById('app') as HTMLDivElement;
+
+  // Create world - dual runtime (VR + browser)
+  const world = await World.create(container, {
+    xr: { offer: 'once' },
+    render: {
+      near: 0.01,
+      far: 50,
+    },
+    features: {
+      locomotion: false,
+      grabbing: false,
+      physics: false,
+    },
+  });
+
+  // Set initial camera position
+  world.camera.position.set(0, 2.0, 1.0);
+  world.camera.lookAt(0, 0.5, -1.0);
+
+  // Core game objects
+  const game = new GameManager();
+  const audio = new AudioManager();
+  const boardRenderer = new BoardRenderer(world, game);
+
+  // Register systems
+  world.registerSystem(GameSystem);
+  world.registerSystem(UISystem);
+
+  // Get system instances and inject refs
+  const gameSystem = world.getSystem(GameSystem)!;
+  gameSystem.setRefs({ game, boardRenderer, audio });
+
+  const uiSystem = world.getSystem(UISystem)!;
+  uiSystem.setRefs({ game, gameSystem, audio });
+
+  // Create UI panels
+  createPanels(world);
+
+  // Init audio on first interaction
+  document.addEventListener('click', () => audio.init(), { once: true });
+  document.addEventListener('touchstart', () => audio.init(), { once: true });
+}
+
+function createPanels(world: World): void {
+  // All panels as 3D world panels (not ScreenSpace to avoid overlay bleedthrough)
+
+  // Menu panel - centered in view
+  const menuEntity = world.createTransformEntity();
+  menuEntity.object3D!.position.set(0, 1.1, -1.5);
+  menuEntity.addComponent(PanelUI, { config: './ui/menu.json' });
+
+  // HUD panel - above the board
+  const hudEntity = world.createTransformEntity();
+  hudEntity.object3D!.position.set(0, 1.7, -1.5);
+  hudEntity.addComponent(PanelUI, { config: './ui/hud.json' });
+  hudEntity.object3D!.visible = false;
+
+  // Level select panel - centered
+  const levelsEntity = world.createTransformEntity();
+  levelsEntity.object3D!.position.set(0, 1.0, -1.5);
+  levelsEntity.addComponent(PanelUI, { config: './ui/levels.json' });
+  levelsEntity.object3D!.visible = false;
+
+  // Complete panel - centered
+  const completeEntity = world.createTransformEntity();
+  completeEntity.object3D!.position.set(0, 1.1, -1.5);
+  completeEntity.addComponent(PanelUI, { config: './ui/done.json' });
+  completeEntity.object3D!.visible = false;
+
+  // Pause panel - centered
+  const pauseEntity = world.createTransformEntity();
+  pauseEntity.object3D!.position.set(0, 1.1, -1.5);
+  pauseEntity.addComponent(PanelUI, { config: './ui/pause.json' });
+  pauseEntity.object3D!.visible = false;
+}
+
+main().catch(console.error);

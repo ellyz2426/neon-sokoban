@@ -1,0 +1,67 @@
+<panel>
+  <style>
+    .root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12;
+      padding: 20;
+      background-color: rgba(5, 5, 20, 0.92);
+      border-radius: 12;
+      border-color: #00ccff;
+      border-width: 2;
+      width: 320;
+    }
+    .title {
+      font-size: 28;
+      color: #00ccff;
+      font-weight: bold;
+    }
+    .subtitle {
+      font-size: 14;
+      color: #4488ff;
+    }
+    .btn {
+      background-color: #00334466;
+      border-color: #00ccff;
+      border-width: 1;
+      border-radius: 8;
+      padding: 10;
+      width: 220;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #00557788;
+    }
+    .btn-text {
+      font-size: 16;
+      color: #00eeff;
+      font-weight: bold;
+    }
+    .progress {
+      font-size: 12;
+      color: #668899;
+    }
+    .spacer {
+      height: 8;
+    }
+  </style>
+  <container class="root">
+    <text class="title">NEON SOKOBAN</text>
+    <text class="subtitle">Push Boxes. Solve Puzzles.</text>
+    <container class="spacer"></container>
+    <container class="btn" id="btn-continue">
+      <text class="btn-text">CONTINUE</text>
+    </container>
+    <container class="btn" id="btn-play">
+      <text class="btn-text">NEW GAME</text>
+    </container>
+    <container class="btn" id="btn-levels">
+      <text class="btn-text">LEVEL SELECT</text>
+    </container>
+    <container class="spacer"></container>
+    <text class="progress" id="progress-text">0/30 Levels</text>
+  </container>
+</panel>

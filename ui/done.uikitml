@@ -1,0 +1,81 @@
+<panel>
+  <style>
+    .root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10;
+      padding: 20;
+      background-color: rgba(5, 5, 20, 0.92);
+      border-radius: 12;
+      border-color: #00ff66;
+      border-width: 2;
+      width: 300;
+    }
+    .title {
+      font-size: 24;
+      color: #00ff66;
+      font-weight: bold;
+    }
+    .level-name {
+      font-size: 14;
+      color: #88ccaa;
+    }
+    .stars {
+      font-size: 28;
+      color: #ffcc00;
+      font-weight: bold;
+    }
+    .stat-row {
+      display: flex;
+      flex-direction: row;
+      gap: 16;
+      justify-content: center;
+    }
+    .stat-text {
+      font-size: 13;
+      color: #88aacc;
+    }
+    .btn {
+      background-color: #00334466;
+      border-color: #00ccff;
+      border-width: 1;
+      border-radius: 8;
+      padding: 10;
+      width: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #00557788;
+    }
+    .btn-text {
+      font-size: 14;
+      color: #00eeff;
+      font-weight: bold;
+    }
+    .spacer {
+      height: 6;
+    }
+  </style>
+  <container class="root">
+    <text class="title">LEVEL COMPLETE!</text>
+    <text class="level-name" id="level-name">First Steps</text>
+    <text class="stars" id="stars-text">***</text>
+    <container class="stat-row">
+      <text class="stat-text" id="moves-text">Moves: 4</text>
+      <text class="stat-text" id="pushes-text">Pushes: 1</text>
+    </container>
+    <text class="stat-text" id="par-text">Par: 4</text>
+    <container class="spacer"></container>
+    <container class="btn" id="btn-next">
+      <text class="btn-text">NEXT LEVEL</text>
+    </container>
+    <container class="btn" id="btn-retry">
+      <text class="btn-text">RETRY</text>
+    </container>
+    <container class="btn" id="btn-menu">
+      <text class="btn-text">MAIN MENU</text>
+    </container>
+  </container>
+</panel>

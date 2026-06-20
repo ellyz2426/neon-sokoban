@@ -1,0 +1,115 @@
+<panel>
+  <style>
+    .root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10;
+      padding: 16;
+      background-color: rgba(5, 5, 20, 0.92);
+      border-radius: 12;
+      border-color: #00ccff;
+      border-width: 2;
+      width: 380;
+    }
+    .title {
+      font-size: 20;
+      color: #00ccff;
+      font-weight: bold;
+    }
+    .grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4;
+      width: 360;
+    }
+    .row {
+      display: flex;
+      flex-direction: row;
+      gap: 4;
+      justify-content: center;
+    }
+    .lvl-btn {
+      background-color: #001a2266;
+      border-color: #00ccff44;
+      border-width: 1;
+      border-radius: 4;
+      padding: 6;
+      width: 48;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #00446688;
+    }
+    .lvl-text {
+      font-size: 10;
+      color: #00bbdd;
+    }
+    .back-btn {
+      background-color: #33001166;
+      border-color: #ff008866;
+      border-width: 1;
+      border-radius: 8;
+      padding: 8;
+      width: 120;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      hover-background-color: #55002288;
+    }
+    .back-text {
+      font-size: 14;
+      color: #ff44aa;
+    }
+  </style>
+  <container class="root">
+    <text class="title">SELECT LEVEL</text>
+    <container class="grid">
+      <container class="row">
+        <container class="lvl-btn" id="lvl-0"><text class="lvl-text">1</text></container>
+        <container class="lvl-btn" id="lvl-1"><text class="lvl-text">2</text></container>
+        <container class="lvl-btn" id="lvl-2"><text class="lvl-text">3</text></container>
+        <container class="lvl-btn" id="lvl-3"><text class="lvl-text">4</text></container>
+        <container class="lvl-btn" id="lvl-4"><text class="lvl-text">5</text></container>
+        <container class="lvl-btn" id="lvl-5"><text class="lvl-text">6</text></container>
+      </container>
+      <container class="row">
+        <container class="lvl-btn" id="lvl-6"><text class="lvl-text">7</text></container>
+        <container class="lvl-btn" id="lvl-7"><text class="lvl-text">8</text></container>
+        <container class="lvl-btn" id="lvl-8"><text class="lvl-text">9</text></container>
+        <container class="lvl-btn" id="lvl-9"><text class="lvl-text">10</text></container>
+        <container class="lvl-btn" id="lvl-10"><text class="lvl-text">11</text></container>
+        <container class="lvl-btn" id="lvl-11"><text class="lvl-text">12</text></container>
+      </container>
+      <container class="row">
+        <container class="lvl-btn" id="lvl-12"><text class="lvl-text">13</text></container>
+        <container class="lvl-btn" id="lvl-13"><text class="lvl-text">14</text></container>
+        <container class="lvl-btn" id="lvl-14"><text class="lvl-text">15</text></container>
+        <container class="lvl-btn" id="lvl-15"><text class="lvl-text">16</text></container>
+        <container class="lvl-btn" id="lvl-16"><text class="lvl-text">17</text></container>
+        <container class="lvl-btn" id="lvl-17"><text class="lvl-text">18</text></container>
+      </container>
+      <container class="row">
+        <container class="lvl-btn" id="lvl-18"><text class="lvl-text">19</text></container>
+        <container class="lvl-btn" id="lvl-19"><text class="lvl-text">20</text></container>
+        <container class="lvl-btn" id="lvl-20"><text class="lvl-text">21</text></container>
+        <container class="lvl-btn" id="lvl-21"><text class="lvl-text">22</text></container>
+        <container class="lvl-btn" id="lvl-22"><text class="lvl-text">23</text></container>
+        <container class="lvl-btn" id="lvl-23"><text class="lvl-text">24</text></container>
+      </container>
+      <container class="row">
+        <container class="lvl-btn" id="lvl-24"><text class="lvl-text">25</text></container>
+        <container class="lvl-btn" id="lvl-25"><text class="lvl-text">26</text></container>
+        <container class="lvl-btn" id="lvl-26"><text class="lvl-text">27</text></container>
+        <container class="lvl-btn" id="lvl-27"><text class="lvl-text">28</text></container>
+        <container class="lvl-btn" id="lvl-28"><text class="lvl-text">29</text></container>
+        <container class="lvl-btn" id="lvl-29"><text class="lvl-text">30</text></container>
+      </container>
+    </container>
+    <container class="back-btn" id="btn-back">
+      <text class="back-text">BACK</text>
+    </container>
+  </container>
+</panel>
