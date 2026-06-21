@@ -1,0 +1,308 @@
+{
+  "element": {
+    "sourceTag": "panel",
+    "type": "custom",
+    "children": [
+      {
+        "sourceTag": "container",
+        "type": "custom",
+        "children": [
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "PAUSED"
+            ],
+            "properties": {
+              "class": "title"
+            },
+            "dataUid": "uid-3"
+          },
+          {
+            "sourceTag": "container",
+            "type": "custom",
+            "children": [],
+            "properties": {
+              "class": "spacer"
+            },
+            "dataUid": "uid-4"
+          },
+          {
+            "sourceTag": "container",
+            "type": "custom",
+            "children": [
+              {
+                "sourceTag": "text",
+                "type": "custom",
+                "children": [
+                  "RESUME"
+                ],
+                "properties": {
+                  "class": "btn-text"
+                },
+                "dataUid": "uid-6"
+              }
+            ],
+            "properties": {
+              "class": "btn",
+              "id": "btn-resume"
+            },
+            "dataUid": "uid-5"
+          },
+          {
+            "sourceTag": "container",
+            "type": "custom",
+            "children": [
+              {
+                "sourceTag": "text",
+                "type": "custom",
+                "children": [
+                  "RESTART LEVEL"
+                ],
+                "properties": {
+                  "class": "btn-text"
+                },
+                "dataUid": "uid-8"
+              }
+            ],
+            "properties": {
+              "class": "btn",
+              "id": "btn-prestart"
+            },
+            "dataUid": "uid-7"
+          },
+          {
+            "sourceTag": "container",
+            "type": "custom",
+            "children": [
+              {
+                "sourceTag": "text",
+                "type": "custom",
+                "children": [
+                  "MAIN MENU"
+                ],
+                "properties": {
+                  "class": "btn-text"
+                },
+                "dataUid": "uid-10"
+              }
+            ],
+            "properties": {
+              "class": "btn",
+              "id": "btn-pmenu"
+            },
+            "dataUid": "uid-9"
+          }
+        ],
+        "properties": {
+          "class": "root"
+        },
+        "dataUid": "uid-2"
+      }
+    ],
+    "properties": {},
+    "dataUid": "uid-1"
+  },
+  "classes": {
+    "root": {
+      "content": {
+        "display": "flex",
+        "flexDirection": "column",
+        "alignItems": "center",
+        "gap": "10",
+        "padding": "20",
+        "backgroundColor": "rgba(5, 5, 20, 0.92)",
+        "borderRadius": 12,
+        "borderColor": "#ff8800",
+        "borderWidth": "2",
+        "width": "280"
+      }
+    },
+    "title": {
+      "content": {
+        "fontSize": "22",
+        "color": "#ff8800",
+        "fontWeight": "bold"
+      }
+    },
+    "btn": {
+      "content": {
+        "backgroundColor": "#00334466",
+        "borderColor": "#00ccff",
+        "borderWidth": "1",
+        "borderRadius": 8,
+        "padding": "10",
+        "width": "200",
+        "display": "flex",
+        "alignItems": "center",
+        "justifyContent": "center",
+        "cursor": "pointer",
+        "hoverBackgroundColor": "#00557788"
+      }
+    },
+    "btn-text": {
+      "content": {
+        "fontSize": "14",
+        "color": "#00eeff",
+        "fontWeight": "bold"
+      }
+    },
+    "spacer": {
+      "content": {
+        "height": "6"
+      }
+    }
+  },
+  "ranges": {
+    "uid-1": {
+      "start": {
+        "line": 0,
+        "column": 0
+      },
+      "end": {
+        "line": 54,
+        "column": 8
+      }
+    },
+    "root": {
+      "start": {
+        "line": 2,
+        "column": 4
+      },
+      "end": {
+        "line": 2,
+        "column": 9
+      }
+    },
+    "title": {
+      "start": {
+        "line": 14,
+        "column": 4
+      },
+      "end": {
+        "line": 14,
+        "column": 10
+      }
+    },
+    "btn": {
+      "start": {
+        "line": 19,
+        "column": 4
+      },
+      "end": {
+        "line": 19,
+        "column": 8
+      }
+    },
+    "btn-text": {
+      "start": {
+        "line": 32,
+        "column": 4
+      },
+      "end": {
+        "line": 32,
+        "column": 13
+      }
+    },
+    "spacer": {
+      "start": {
+        "line": 37,
+        "column": 4
+      },
+      "end": {
+        "line": 37,
+        "column": 11
+      }
+    },
+    "uid-2": {
+      "start": {
+        "line": 41,
+        "column": 2
+      },
+      "end": {
+        "line": 53,
+        "column": 14
+      }
+    },
+    "uid-3": {
+      "start": {
+        "line": 42,
+        "column": 4
+      },
+      "end": {
+        "line": 42,
+        "column": 37
+      }
+    },
+    "uid-4": {
+      "start": {
+        "line": 43,
+        "column": 4
+      },
+      "end": {
+        "line": 43,
+        "column": 42
+      }
+    },
+    "uid-5": {
+      "start": {
+        "line": 44,
+        "column": 4
+      },
+      "end": {
+        "line": 46,
+        "column": 16
+      }
+    },
+    "uid-6": {
+      "start": {
+        "line": 45,
+        "column": 6
+      },
+      "end": {
+        "line": 45,
+        "column": 42
+      }
+    },
+    "uid-7": {
+      "start": {
+        "line": 47,
+        "column": 4
+      },
+      "end": {
+        "line": 49,
+        "column": 16
+      }
+    },
+    "uid-8": {
+      "start": {
+        "line": 48,
+        "column": 6
+      },
+      "end": {
+        "line": 48,
+        "column": 49
+      }
+    },
+    "uid-9": {
+      "start": {
+        "line": 50,
+        "column": 4
+      },
+      "end": {
+        "line": 52,
+        "column": 16
+      }
+    },
+    "uid-10": {
+      "start": {
+        "line": 51,
+        "column": 6
+      },
+      "end": {
+        "line": 51,
+        "column": 45
+      }
+    }
+  }
+}

@@ -1,0 +1,258 @@
+{
+  "element": {
+    "sourceTag": "panel",
+    "type": "custom",
+    "children": [
+      {
+        "sourceTag": "container",
+        "type": "custom",
+        "children": [
+          {
+            "sourceTag": "text",
+            "type": "custom",
+            "children": [
+              "[*]"
+            ],
+            "properties": {
+              "class": "icon",
+              "id": "toast-icon"
+            },
+            "dataUid": "uid-3"
+          },
+          {
+            "sourceTag": "container",
+            "type": "custom",
+            "children": [
+              {
+                "sourceTag": "text",
+                "type": "custom",
+                "children": [
+                  "ACHIEVEMENT UNLOCKED"
+                ],
+                "properties": {
+                  "class": "label"
+                },
+                "dataUid": "uid-5"
+              },
+              {
+                "sourceTag": "text",
+                "type": "custom",
+                "children": [
+                  "First Solve"
+                ],
+                "properties": {
+                  "class": "name",
+                  "id": "toast-name"
+                },
+                "dataUid": "uid-6"
+              },
+              {
+                "sourceTag": "text",
+                "type": "custom",
+                "children": [
+                  "Complete your first level"
+                ],
+                "properties": {
+                  "class": "desc",
+                  "id": "toast-desc"
+                },
+                "dataUid": "uid-7"
+              }
+            ],
+            "properties": {
+              "class": "info"
+            },
+            "dataUid": "uid-4"
+          }
+        ],
+        "properties": {
+          "class": "root"
+        },
+        "dataUid": "uid-2"
+      }
+    ],
+    "properties": {},
+    "dataUid": "uid-1"
+  },
+  "classes": {
+    "root": {
+      "content": {
+        "display": "flex",
+        "flexDirection": "row",
+        "alignItems": "center",
+        "gap": "10",
+        "padding": "12",
+        "backgroundColor": "rgba(20, 15, 5, 0.95)",
+        "borderRadius": 10,
+        "borderColor": "#ffcc00",
+        "borderWidth": "2",
+        "width": "260"
+      }
+    },
+    "icon": {
+      "content": {
+        "fontSize": "18",
+        "color": "#ffcc00",
+        "fontWeight": "bold"
+      }
+    },
+    "info": {
+      "content": {
+        "display": "flex",
+        "flexDirection": "column",
+        "gap": "2"
+      }
+    },
+    "label": {
+      "content": {
+        "fontSize": "9",
+        "color": "#ffaa00"
+      }
+    },
+    "name": {
+      "content": {
+        "fontSize": "13",
+        "color": "#ffcc00",
+        "fontWeight": "bold"
+      }
+    },
+    "desc": {
+      "content": {
+        "fontSize": "9",
+        "color": "#ccaa66"
+      }
+    }
+  },
+  "ranges": {
+    "uid-1": {
+      "start": {
+        "line": 0,
+        "column": 0
+      },
+      "end": {
+        "line": 46,
+        "column": 8
+      }
+    },
+    "root": {
+      "start": {
+        "line": 2,
+        "column": 4
+      },
+      "end": {
+        "line": 2,
+        "column": 9
+      }
+    },
+    "icon": {
+      "start": {
+        "line": 14,
+        "column": 4
+      },
+      "end": {
+        "line": 14,
+        "column": 9
+      }
+    },
+    "info": {
+      "start": {
+        "line": 19,
+        "column": 4
+      },
+      "end": {
+        "line": 19,
+        "column": 9
+      }
+    },
+    "label": {
+      "start": {
+        "line": 24,
+        "column": 4
+      },
+      "end": {
+        "line": 24,
+        "column": 10
+      }
+    },
+    "name": {
+      "start": {
+        "line": 28,
+        "column": 4
+      },
+      "end": {
+        "line": 28,
+        "column": 9
+      }
+    },
+    "desc": {
+      "start": {
+        "line": 33,
+        "column": 4
+      },
+      "end": {
+        "line": 33,
+        "column": 9
+      }
+    },
+    "uid-2": {
+      "start": {
+        "line": 38,
+        "column": 2
+      },
+      "end": {
+        "line": 45,
+        "column": 14
+      }
+    },
+    "uid-3": {
+      "start": {
+        "line": 39,
+        "column": 4
+      },
+      "end": {
+        "line": 39,
+        "column": 49
+      }
+    },
+    "uid-4": {
+      "start": {
+        "line": 40,
+        "column": 4
+      },
+      "end": {
+        "line": 44,
+        "column": 16
+      }
+    },
+    "uid-5": {
+      "start": {
+        "line": 41,
+        "column": 6
+      },
+      "end": {
+        "line": 41,
+        "column": 53
+      }
+    },
+    "uid-6": {
+      "start": {
+        "line": 42,
+        "column": 6
+      },
+      "end": {
+        "line": 42,
+        "column": 59
+      }
+    },
+    "uid-7": {
+      "start": {
+        "line": 43,
+        "column": 6
+      },
+      "end": {
+        "line": 43,
+        "column": 73
+      }
+    }
+  }
+}
