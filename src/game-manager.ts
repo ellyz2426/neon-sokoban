@@ -3,6 +3,7 @@
 import { LEVELS, LevelDef } from './levels';
 import { AchievementTracker, AchievementStats, Achievement } from './achievements';
 import { findDeadlockedBoxes } from './deadlock';
+import { ReplayRecorder, ReplayFrame } from './replay';
 
 export const enum CellType {
   Empty = 0,
@@ -47,6 +48,7 @@ export class GameManager {
   state: GameState | null = null;
   currentLevel = 0;
   private undoStack: MoveRecord[] = [];
+  private redoStack: MoveRecord[] = [];
   private _onMove: (() => void) | null = null;
   private _onComplete: (() => void) | null = null;
   private _onAchievement: ((ach: Achievement) => void) | null = null;
@@ -78,6 +80,13 @@ export class GameManager {
   deadlocksTriggered = 0;
   totalHintsUsed = 0;
 
+  // Replays watched counter
+  replaysWatched = 0;
+  // Themes used tracking
+  themesUsed = new Set<number>([0]); // default theme already used
+  // Levels with perfect pushes (pushes = minimum possible)
+  perfectPushLevels = 0;
+
   // Best times (seconds) per level
   bestTimes: number[] = [];
 
@@ -89,8 +98,13 @@ export class GameManager {
   // Achievement system
   achievements: AchievementTracker;
 
+  // Replay recording
+  replayRecorder: ReplayRecorder;
+  lastReplayFrames: ReplayFrame[] = [];
+
   constructor() {
     this.achievements = new AchievementTracker();
+    this.replayRecorder = new ReplayRecorder();
     this.sessionStartTime = performance.now();
     this.load();
   }
@@ -176,6 +190,7 @@ export class GameManager {
     this.currentLevel = idx;
     const def = LEVELS[idx];
     this.undoStack = [];
+    this.redoStack = [];
     this.currentLevelUndos = 0;
     this.currentLevelRestarted = false;
 
@@ -232,6 +247,7 @@ export class GameManager {
     };
     this.timerStart = performance.now();
     this.timerElapsed = 0;
+    this.replayRecorder.startRecording();
   }
 
   private floodFillFloor(grid: CellType[][], startR: number, startC: number, h: number, w: number): void {
@@ -288,10 +304,16 @@ export class GameManager {
       this.undoStack.push({ playerRow: pr, playerCol: pc });
     }
 
+    // Clear redo stack on new move
+    this.redoStack = [];
+
     this.state.playerRow = nr;
     this.state.playerCol = nc;
     this.state.moves++;
     this.totalMoves++;
+
+    // Record move for replay
+    this.replayRecorder.recordMove(dir);
 
     this._onMove?.();
 
@@ -305,6 +327,7 @@ export class GameManager {
     if (this.checkComplete()) {
       this.state.completed = true;
       this.timerElapsed = performance.now() - this.timerStart;
+      this.lastReplayFrames = this.replayRecorder.stopRecording();
       this.completedLevels.add(this.currentLevel);
       this.totalLevelsCompleted++;
       this.sessionLevels++;
@@ -358,6 +381,18 @@ export class GameManager {
     if (!this.state || this.undoStack.length === 0 || this.state.completed) return false;
 
     const record = this.undoStack.pop()!;
+
+    // Save current state to redo stack
+    const redoRecord: MoveRecord = {
+      playerRow: this.state.playerRow,
+      playerCol: this.state.playerCol,
+    };
+    if (record.boxFrom && record.boxTo) {
+      redoRecord.boxFrom = record.boxTo;
+      redoRecord.boxTo = record.boxFrom;
+    }
+    this.redoStack.push(redoRecord);
+
     this.state.playerRow = record.playerRow;
     this.state.playerCol = record.playerCol;
     this.state.moves--;
@@ -368,6 +403,36 @@ export class GameManager {
       this.state.boxes.delete(record.boxTo);
       this.state.boxes.add(record.boxFrom);
       this.state.pushes--;
+    }
+
+    this._onMove?.();
+    return true;
+  }
+
+  redo(): boolean {
+    if (!this.state || this.redoStack.length === 0 || this.state.completed) return false;
+
+    const record = this.redoStack.pop()!;
+
+    // Push current state back onto undo stack
+    const undoRecord: MoveRecord = {
+      playerRow: this.state.playerRow,
+      playerCol: this.state.playerCol,
+    };
+    if (record.boxFrom && record.boxTo) {
+      undoRecord.boxFrom = record.boxTo;
+      undoRecord.boxTo = record.boxFrom;
+    }
+    this.undoStack.push(undoRecord);
+
+    this.state.playerRow = record.playerRow;
+    this.state.playerCol = record.playerCol;
+    this.state.moves++;
+
+    if (record.boxFrom && record.boxTo) {
+      this.state.boxes.delete(record.boxFrom);
+      this.state.boxes.add(record.boxTo);
+      this.state.pushes++;
     }
 
     this._onMove?.();
@@ -467,6 +532,10 @@ export class GameManager {
       hintsUsed: this.totalHintsUsed,
       fastestLevelTime: this.timerElapsed / 1000,
       noHintLevels: this.levelsFirstTry, // reuse first-try as proxy for now
+      replaysWatched: this.replaysWatched,
+      themesUsed: this.themesUsed.size,
+      twoStarOrBetter: this.threeStarCount + this.perfectLevels, // approximation
+      perfectPushLevels: this.perfectPushLevels,
     };
     this.achievements.check(stats);
   }
@@ -494,6 +563,37 @@ export class GameManager {
     const m = Math.floor(s / 60);
     const sec = s % 60;
     return `${m}:${sec.toString().padStart(2, '0')}`;
+  }
+
+  /** Get today's daily challenge level index based on date hash */
+  /** Reset all progress */
+  resetAllProgress(): void {
+    this.completedLevels.clear();
+    this.bestMoves = [];
+    this.bestTimes = [];
+    this.totalLevelsCompleted = 0;
+    this.totalMoves = 0;
+    this.totalPushes = 0;
+    this.totalUndos = 0;
+    this.totalRestarts = 0;
+    this.totalTimePlayed = 0;
+    this.perfectLevels = 0;
+    this.noUndoLevels = 0;
+    this.levelsFirstTry = 0;
+    this.levelsUnder10Moves = 0;
+    this.longestNoUndoStreak = 0;
+    this.threeStarCount = 0;
+    this.totalHintsUsed = 0;
+    this.deadlocksTriggered = 0;
+    this.achievements.reset();
+    this.sessionStartTime = performance.now();
+    this.sessionLevels = 0;
+    try {
+      localStorage.removeItem('neon-sokoban-progress-v2');
+      localStorage.removeItem('neon-sokoban-progress');
+      localStorage.removeItem('neon-sokoban-achievements');
+      localStorage.removeItem('neon-sokoban-daily');
+    } catch { /* ignore */ }
   }
 
   /** Get today's daily challenge level index based on date hash */

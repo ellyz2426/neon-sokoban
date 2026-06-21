@@ -83,6 +83,9 @@
       <container class="hud-btn" id="btn-undo">
         <text class="hud-btn-text">UNDO</text>
       </container>
+      <container class="hud-btn" id="btn-redo">
+        <text class="hud-btn-text">REDO</text>
+      </container>
       <container class="hint-btn" id="btn-hint">
         <text class="hint-btn-text">HINT</text>
       </container>

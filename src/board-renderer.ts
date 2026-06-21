@@ -376,11 +376,36 @@ export class BoardRenderer {
     this.hintedBox = null;
     this.hintTimer = 0;
 
+    // Auto-frame camera based on board dimensions
+    this.autoFrameBoard(width, height);
+
     // Start entrance animation
     this.entranceProgress = 0;
     this.isEntering = true;
     this.boardGroup.scale.setScalar(0.01);
   }
+
+  /** Adjust board scale and position to fit the level nicely in view */
+  private autoFrameBoard(boardWidth: number, boardHeight: number): void {
+    const maxDim = Math.max(boardWidth, boardHeight);
+    // Reference: a 7x7 board looks good at default scale
+    const refDim = 7;
+    if (maxDim > refDim) {
+      const scaleFactor = refDim / maxDim;
+      // We don't directly scale here since entrance animation handles it,
+      // but we adjust the board Y position to keep it centered
+      this.boardGroup.position.y = 0.7 - (maxDim - refDim) * 0.02;
+      this.boardGroup.position.z = -1.3 - (maxDim - refDim) * 0.05;
+      // Adjust CELL_SIZE-equivalent via board group scale target
+      this._targetScale = scaleFactor;
+    } else {
+      this.boardGroup.position.y = 0.7;
+      this.boardGroup.position.z = -1.3;
+      this._targetScale = 1.0;
+    }
+  }
+
+  private _targetScale = 1.0;
 
   private buildGridLines(boardWidth: number, boardHeight: number, offsetX: number, offsetZ: number): void {
     if (this.gridLines) {
@@ -503,10 +528,10 @@ export class BoardRenderer {
       const t = this.entranceProgress;
       const p = 0.4;
       const s = t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
-      this.boardGroup.scale.setScalar(s);
+      this.boardGroup.scale.setScalar(s * this._targetScale);
       if (this.entranceProgress >= 1) {
         this.isEntering = false;
-        this.boardGroup.scale.setScalar(1);
+        this.boardGroup.scale.setScalar(this._targetScale);
       }
     }
 

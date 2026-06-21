@@ -75,6 +75,9 @@
     <container class="btn" id="btn-next">
       <text class="btn-text">NEXT LEVEL</text>
     </container>
+    <container class="btn" id="btn-replay">
+      <text class="btn-text">WATCH REPLAY</text>
+    </container>
     <container class="btn" id="btn-retry">
       <text class="btn-text">RETRY</text>
     </container>

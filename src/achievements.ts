@@ -40,6 +40,11 @@ export interface AchievementStats {
   hintsUsed: number;
   fastestLevelTime: number; // seconds
   noHintLevels: number;
+  // Round 5 additions
+  replaysWatched: number;
+  themesUsed: number;
+  twoStarOrBetter: number;
+  perfectPushLevels: number;
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -110,6 +115,15 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'speed_demon_15', name: 'Lightning', description: 'Complete a level in under 15 seconds', category: 'mastery', icon: '|>|', condition: (s) => s.fastestLevelTime < 15 },
   { id: 'no_hint_clear_5', name: 'Self-Reliant', description: 'Complete 5 levels without using hints', category: 'efficiency', icon: '(!)', condition: (s) => s.noHintLevels >= 5 },
   { id: 'deadlock_30', name: 'Deadlock Veteran', description: 'Trigger 30 deadlock warnings', category: 'explorer', icon: '{!}', condition: (s) => s.deadlocksTriggered >= 30 },
+
+  // Round 5 new achievements
+  { id: 'replay_first', name: 'Instant Replay', description: 'Watch your first solution replay', category: 'explorer', icon: '{R}', condition: (s) => s.replaysWatched >= 1 },
+  { id: 'replay_10', name: 'Film Buff', description: 'Watch 10 solution replays', category: 'explorer', icon: '{R}', condition: (s) => s.replaysWatched >= 10 },
+  { id: 'speed_demon_10', name: 'Blitz', description: 'Complete a level in under 10 seconds', category: 'mastery', icon: '|>|', condition: (s) => s.fastestLevelTime < 10 },
+  { id: 'all_themes', name: 'Fashionista', description: 'Try all 6 color themes', category: 'explorer', icon: '{C}', condition: (s) => s.themesUsed >= 6 },
+  { id: 'two_star_15', name: 'Silver Standard', description: 'Earn at least 2 stars on 15 levels', category: 'efficiency', icon: '(2)', condition: (s) => s.twoStarOrBetter >= 15 },
+  { id: 'push_efficiency', name: 'Minimalist', description: 'Complete 3 levels with no unnecessary pushes', category: 'mastery', icon: '|P|', condition: (s) => s.perfectPushLevels >= 3 },
+  { id: 'marathon_session', name: 'Marathon Session', description: 'Complete 20 levels in one session', category: 'dedication', icon: '<M>', condition: (s) => s.currentSession >= 20 },
 ];
 
 export class AchievementTracker {
@@ -155,6 +169,13 @@ export class AchievementTracker {
 
   get totalEarned(): number { return this.earned.size; }
   get totalAvailable(): number { return ACHIEVEMENTS.length; }
+
+  reset(): void {
+    this.earned.clear();
+    try {
+      localStorage.removeItem('neon-sokoban-achievements');
+    } catch { /* ignore */ }
+  }
 
   private save(): void {
     try {

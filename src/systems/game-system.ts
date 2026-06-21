@@ -8,9 +8,10 @@ import { GameManager, Direction } from '../game-manager';
 import { BoardRenderer } from '../board-renderer';
 import { AudioManager } from '../audio-manager';
 import { generateHint, canPlayerReach } from '../hints';
+import { ReplayPlayer } from '../replay';
 
 export type GameScreen = 'menu' | 'playing' | 'levelselect' | 'complete' | 'pause'
-  | 'achievements' | 'stats' | 'settings' | 'help';
+  | 'achievements' | 'stats' | 'settings' | 'help' | 'replay';
 
 export class GameSystem extends createSystem({}) {
   private game!: GameManager;
@@ -26,6 +27,28 @@ export class GameSystem extends createSystem({}) {
   elapsedTime = 0; // seconds since level start
   private hintCooldown = 0;
   hintsUsed = 0;
+
+  // Replay playback
+  replayPlayer: ReplayPlayer | null = null;
+  private _replayLevel = 0;
+
+  private ensureReplayPlayer(): ReplayPlayer {
+    if (!this.replayPlayer) {
+      this.replayPlayer = new ReplayPlayer();
+      this.replayPlayer.onMove((dir) => {
+        if (this.game.state && !this.game.state.completed) {
+          this.game.tryMove(dir);
+        }
+      });
+      this.replayPlayer.onComplete(() => {
+        setTimeout(() => {
+          this._screen = 'complete';
+          this._onScreenChange?.('complete');
+        }, 800);
+      });
+    }
+    return this.replayPlayer;
+  }
 
   setRefs(refs: {
     game: GameManager;
@@ -150,6 +173,44 @@ export class GameSystem extends createSystem({}) {
     }
   }
 
+  redoMove(): void {
+    if (this.game.redo()) {
+      this.audio.playMove();
+      this.boardRenderer.updatePositions();
+      this.boardRenderer.clearHint();
+      if (this.game.state) {
+        this.prevPushCount = this.game.state.pushes;
+      }
+    }
+  }
+
+  startReplay(): void {
+    const frames = this.game.lastReplayFrames;
+    if (frames.length === 0) return;
+
+    const rp = this.ensureReplayPlayer();
+
+    // Reload the level to play from scratch
+    this._replayLevel = this.game.currentLevel;
+    this.game.loadLevel(this._replayLevel);
+    this.boardRenderer.buildBoard();
+    this.prevPushCount = 0;
+
+    // Load and play
+    rp.load(frames);
+    rp.play(1.5);
+    this.game.replaysWatched++;
+
+    this._screen = 'replay';
+    this._onScreenChange?.('replay');
+  }
+
+  stopReplay(): void {
+    this.ensureReplayPlayer().stop();
+    this._screen = 'complete';
+    this._onScreenChange?.('complete');
+  }
+
   showHint(): void {
     if (this.hintCooldown > 0) return;
     if (!this.game.state || this.game.state.completed) return;
@@ -187,6 +248,12 @@ export class GameSystem extends createSystem({}) {
   update(delta: number, _time: number): void {
     this.boardRenderer.update(delta);
 
+    // Tick replay player when in replay mode
+    if (this._screen === 'replay') {
+      this.ensureReplayPlayer().update(delta);
+      return;
+    }
+
     if (this._screen !== 'playing') return;
 
     // Update elapsed time
@@ -217,6 +284,10 @@ export class GameSystem extends createSystem({}) {
 
     if (inputMgr.keyboard.getKeyDown('KeyZ')) {
       this.undoMove();
+    }
+
+    if (inputMgr.keyboard.getKeyDown('KeyY')) {
+      this.redoMove();
     }
 
     if (inputMgr.keyboard.getKeyDown('KeyR')) {

@@ -213,6 +213,7 @@ export class UISystem extends createSystem({
       };
 
       wire('btn-undo', () => this.gameSystem.undoMove());
+      wire('btn-redo', () => this.gameSystem.redoMove());
       wire('btn-hint', () => this.gameSystem.showHint());
       wire('btn-restart', () => {
         this.audio.playMenuClick();
@@ -295,6 +296,10 @@ export class UISystem extends createSystem({
       wire('btn-menu', () => {
         this.audio.playMenuClick();
         this.gameSystem.setScreen('menu');
+      });
+      wire('btn-replay', () => {
+        this.audio.playMenuClick();
+        this.gameSystem.startReplay();
       });
     });
   }
@@ -385,12 +390,14 @@ export class UISystem extends createSystem({
       wire('theme-prev', () => {
         this.audio.playMenuClick();
         this.themeManager.prevTheme();
+        this.game.themesUsed.add(this.themeManager.currentIndex);
         this._onThemeChange?.();
         this.updateSettingsPanel();
       });
       wire('theme-next', () => {
         this.audio.playMenuClick();
         this.themeManager.nextTheme();
+        this.game.themesUsed.add(this.themeManager.currentIndex);
         this._onThemeChange?.();
         this.updateSettingsPanel();
       });
@@ -437,7 +444,7 @@ export class UISystem extends createSystem({
 
   private onScreenChange(screen: GameScreen): void {
     this.setPanelVisible(this.menuEntity, screen === 'menu');
-    this.setPanelVisible(this.hudEntity, screen === 'playing');
+    this.setPanelVisible(this.hudEntity, screen === 'playing' || screen === 'replay');
     this.setPanelVisible(this.levelsEntity, screen === 'levelselect');
     this.setPanelVisible(this.completeEntity, screen === 'complete');
     this.setPanelVisible(this.pauseEntity, screen === 'pause');
@@ -452,6 +459,7 @@ export class UISystem extends createSystem({
     if (screen === 'achievements') this.updateAchievementsPanel();
     if (screen === 'stats') this.updateStatsPanel();
     if (screen === 'settings') this.updateSettingsPanel();
+    if (screen === 'replay') this.updateReplayHud();
   }
 
   private setPanelVisible(entity: import('@iwsdk/core').Entity | null, visible: boolean): void {
@@ -631,9 +639,16 @@ export class UISystem extends createSystem({
     this.toastTimer = 3.5;
   }
 
+  private updateReplayHud(): void {
+    if (!this.hudDoc) return;
+    const level = LEVELS[this.game.currentLevel];
+    setText(this.hudDoc, 'level-text', `REPLAY: ${level?.name || ''}`);
+    setText(this.hudDoc, 'timer-text', 'WATCHING');
+  }
+
   update(_delta: number, _time: number): void {
     // Update HUD
-    if (this.gameSystem.screen === 'playing' && this.hudDoc && this.game.state) {
+    if ((this.gameSystem.screen === 'playing' || this.gameSystem.screen === 'replay') && this.hudDoc && this.game.state) {
       const state = this.game.state;
       const level = LEVELS[this.game.currentLevel];
       const par = level?.par || 0;

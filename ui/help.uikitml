@@ -83,6 +83,10 @@
       <text class="action">Undo</text>
     </container>
     <container class="row">
+      <text class="key">Y</text>
+      <text class="action">Redo</text>
+    </container>
+    <container class="row">
       <text class="key">R</text>
       <text class="action">Restart Level</text>
     </container>
